@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard{% endblock %}
+{% block content %}
+<h1>🏆 Leaderboard</h1>
+<p class="muted">Ranked by distinct problems solved — ties go to fewer total submissions.</p>
+
+<div class="card">
+  <table>
+    <tr>
+      <th style="width:70px;">Rank</th>
+      <th>User</th>
+      <th class="num">Solved</th>
+      <th class="num">Acceptance</th>
+      <th class="num">Submissions</th>
+    </tr>
+    {% for u in page %}
+    <tr>
+      {% with rank=page.start_index|add:forloop.counter0 %}
+      <td class="{% if rank == 1 %}rank-1{% elif rank == 2 %}rank-2{% elif rank == 3 %}rank-3{% endif %}">
+        {% if rank == 1 %}🥇{% elif rank == 2 %}🥈{% elif rank == 3 %}🥉{% else %}{{ rank }}{% endif %}
+      </td>
+      {% endwith %}
+      <td>
+        <a href="{% url 'profile' u.username %}"><b>{{ u.username }}</b></a>
+        {% if u.is_staff %}<span class="badge badge-outline">staff</span>{% endif %}
+      </td>
+      <td class="num"><b>{{ u.solved }}</b></td>
+      <td class="num">{% if u.total_subs %}{% widthratio u.ac_subs u.total_subs 100 %}%{% else %}—{% endif %}</td>
+      <td class="num">{{ u.total_subs }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="muted">No submissions yet — the leaderboard fills up as people solve problems.</td></tr>
+    {% endfor %}
+  </table>
+
+  {% if page.paginator.num_pages > 1 %}
+  <div class="pagination">
+    {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">‹ prev</a>{% endif %}
+    <span class="cur">{{ page.number }} / {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a href="?page={{ page.next_page_number }}">next ›</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ contest.title }}{% endblock %}
+{% block content %}
+
+<div class="spread">
+  <h1 style="margin-bottom:2px;">{{ contest.title }}</h1>
+  <span class="contest-state state-{{ contest.status }}">{{ contest.status }}</span>
+</div>
+<p class="muted">
+  {{ contest.start_time }} → {{ contest.end_time }}
+  · {{ participant_count }} participant{{ participant_count|pluralize }}
+  {% if contest.status == 'upcoming' %} · starts in <span class="countdown" data-end="{{ contest.start_time|date:'U' }}"></span>{% endif %}
+  {% if contest.status == 'running' %} · ends in <span class="countdown" data-end="{{ contest.end_time|date:'U' }}"></span>{% endif %}
+</p>
+
+{% if contest.description %}
+<div class="card statement"><div class="statement-block">{{ contest.description }}</div></div>
+{% endif %}
+
+<div class="card spread">
+  <div>
+    {% if registered %}
+      <b class="tick">✓ You are registered.</b>
+      {% if contest.status == 'running' %} Good luck — the clock is ticking!{% endif %}
+    {% elif contest.status == 'finished' %}
+      <span class="muted">This contest has finished — problems are open for practice.</span>
+    {% else %}
+      <b>Register to participate</b> — it takes one click.
+    {% endif %}
+  </div>
+  <div style="display:flex; gap:10px;">
+    {% if not registered and contest.status != 'finished' %}
+      {% if user.is_authenticated %}
+      <form method="post" action="{% url 'contest_register' contest.slug %}">{% csrf_token %}
+        <button class="btn" type="submit">Register</button>
+      </form>
+      {% else %}
+      <a class="btn" href="{% url 'login' %}?next={{ request.path }}">Log in to register</a>
+      {% endif %}
+    {% endif %}
+    <a class="btn btn-ghost" href="{% url 'contest_standings' contest.slug %}">Standings</a>
+    {% if user.is_authenticated %}
+    <a class="btn btn-ghost" href="{% url 'chat_contest' contest.slug %}">Contest chat</a>
+    {% endif %}
+  </div>
+</div>
+
+<h2>Problems</h2>
+{% if show_problems %}
+<div class="card">
+  <table>
+    <tr><th></th><th>#</th><th>Problem</th><th>Difficulty</th><th class="num">Points</th></tr>
+    {% for cp in contest_problems %}
+    <tr>
+      <td>
+        {% if cp.problem_id in solved_ids %}<span class="tick" title="Solved">✓</span>
+        {% elif cp.problem_id in attempted_ids %}<span class="test-bad" title="Attempted">✗</span>{% endif %}
+      </td>
+      <td><b>{{ cp.label }}</b></td>
+      <td><a href="{{ cp.problem.get_absolute_url }}?contest={{ contest.slug }}">{{ cp.problem.title }}</a></td>
+      <td><span class="diff-{{ cp.problem.difficulty }}">{{ cp.problem.get_difficulty_display }}</span></td>
+      <td class="num">{{ cp.points }}</td>
+    </tr>
+    {% empty %}<tr><td colspan="5" class="muted">No problems added yet.</td></tr>{% endfor %}
+  </table>
+</div>
+{% elif contest.status == 'upcoming' %}
+<p class="muted">Problems will be revealed when the contest starts.</p>
+{% else %}
+<p class="muted">Register to see the problems while the contest is running.</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.countdown').forEach(function (el) {
+  var end = parseInt(el.dataset.end, 10) * 1000;
+  function tick() {
+    var d = end - Date.now();
+    if (d <= 0) { el.textContent = 'now'; location.reload(); return; }
+    var s = Math.floor(d / 1000);
+    var days = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600),
+        m = Math.floor(s % 3600 / 60), sec = s % 60;
+    el.textContent = (days ? days + 'd ' : '') + String(h).padStart(2,'0') + ':' +
+                     String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+    setTimeout(tick, 1000);
+  }
+  tick();
+});
+</script>
+{% endblock %}

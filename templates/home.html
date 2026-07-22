@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="hero">
+  <h1>Online Judge</h1>
+  <p>Solve problems in C, C++ and Python, test your code before submitting, compete in contests, climb the standings.</p>
+  <div class="hero-cta">
+    <a class="btn btn-light" href="{% url 'problem_list' %}">Start solving →</a>
+    <a class="btn btn-ghost" style="background:transparent;color:#fff;border-color:rgba(255,255,255,0.35);" href="{% url 'contest_list' %}">Browse contests</a>
+  </div>
+  <div class="stat-row">
+    <div class="stat"><b>{{ stats.problems }}</b> problems</div>
+    <div class="stat"><b>{{ stats.users }}</b> users</div>
+    <div class="stat"><b>{{ stats.submissions }}</b> submissions</div>
+    <div class="stat"><b>{{ stats.accepted }}</b> accepted</div>
+  </div>
+</div>
+
+{% if running_contests %}
+  {% for contest in running_contests %}
+  <div class="card spread">
+    <div>
+      <span class="contest-state state-running">● Live now</span>
+      <h2 style="margin:2px 0 2px;"><a href="{{ contest.get_absolute_url }}">{{ contest.title }}</a></h2>
+      <span class="muted">Ends <span class="countdown" data-end="{{ contest.end_time|date:'U' }}"></span></span>
+    </div>
+    <a class="btn" href="{{ contest.get_absolute_url }}">Enter contest →</a>
+  </div>
+  {% endfor %}
+{% endif %}
+
+<div class="grid-2">
+  <div>
+    <div class="card">
+      <div class="spread">
+        <h2 style="margin-top:0;">Recent problems</h2>
+        <a href="{% url 'problem_list' %}" class="muted">all problems →</a>
+      </div>
+      <table class="table-plain">
+        <tr><th></th><th>Code</th><th>Title</th><th>Difficulty</th></tr>
+        {% for p in recent_problems %}
+        <tr>
+          <td>{% if p.id in solved_ids %}<span class="tick">✓</span>{% endif %}</td>
+          <td class="mono">{{ p.code }}</td>
+          <td><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></td>
+          <td><span class="diff-{{ p.difficulty }}">{{ p.get_difficulty_display }}</span></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="muted">No problems yet — an admin can add some in the admin panel.</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="spread">
+        <h2 style="margin-top:0;">Recent submissions</h2>
+        <a href="{% url 'submission_list' %}" class="muted">all submissions →</a>
+      </div>
+      <table class="table-plain">
+        {% for s in recent_submissions %}
+        <tr>
+          <td><a href="{% url 'profile' s.user.username %}">{{ s.user.username }}</a></td>
+          <td class="mono"><a href="{{ s.problem.get_absolute_url }}">{{ s.problem.code }}</a></td>
+          <td>{{ s.get_language_display }}</td>
+          <td><a href="{{ s.get_absolute_url }}"><span class="badge badge-{{ s.verdict_class }}">{{ s.verdict }}</span></a></td>
+          <td class="muted">{{ s.submitted_at|timesince }} ago</td>
+        </tr>
+        {% empty %}
+        <tr><td class="muted">No submissions yet — be the first!</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2 style="margin-top:0;">Upcoming contests</h2>
+      {% for c in upcoming_contests %}
+        <p style="margin:8px 0;">
+          <a href="{{ c.get_absolute_url }}">{{ c.title }}</a><br>
+          <span class="muted">starts {{ c.start_time }}</span><br>
+          <span class="countdown" data-end="{{ c.start_time|date:'U' }}"></span>
+        </p>
+      {% empty %}
+        <p class="muted">Nothing scheduled. Check back soon!</p>
+      {% endfor %}
+      <a href="{% url 'contest_list' %}" class="muted">all contests →</a>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0;">Get started</h2>
+      <ol style="padding-left:20px; margin:6px 0;">
+        <li><a href="{% url 'register' %}">Create an account</a></li>
+        <li>Pick a <a href="{% url 'problem_list' %}">problem</a></li>
+        <li>Submit in C, C++ or Python</li>
+        <li>Get an instant verdict + suggestions</li>
+      </ol>
+      <p class="muted">Stuck? Ask in the <a href="{% url 'chat_global' %}">global chat</a>.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('.countdown').forEach(function (el) {
+  var end = parseInt(el.dataset.end, 10) * 1000;
+  function tick() {
+    var d = end - Date.now();
+    if (d <= 0) { el.textContent = 'now'; return; }
+    var s = Math.floor(d / 1000);
+    var days = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600),
+        m = Math.floor(s % 3600 / 60), sec = s % 60;
+    el.textContent = (days ? days + 'd ' : '') + String(h).padStart(2,'0') + ':' +
+                     String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+    setTimeout(tick, 1000);
+  }
+  tick();
+});
+</script>
+{% endblock %}

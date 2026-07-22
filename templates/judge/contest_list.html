@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Contests{% endblock %}
+{% block content %}
+<h1>Contests</h1>
+
+{% if running %}
+<h2>🟢 Running</h2>
+{% for c in running %}
+<div class="card spread">
+  <div>
+    <h3 style="margin:0;"><a href="{{ c.get_absolute_url }}">{{ c.title }}</a></h3>
+    <span class="muted">ends in <span class="countdown" data-end="{{ c.end_time|date:'U' }}"></span></span>
+  </div>
+  <a class="btn" href="{{ c.get_absolute_url }}">Enter →</a>
+</div>
+{% endfor %}
+{% endif %}
+
+<h2>🔵 Upcoming</h2>
+{% for c in upcoming %}
+<div class="card spread">
+  <div>
+    <h3 style="margin:0;"><a href="{{ c.get_absolute_url }}">{{ c.title }}</a></h3>
+    <span class="muted">{{ c.start_time }} — starts in <span class="countdown" data-end="{{ c.start_time|date:'U' }}"></span></span>
+  </div>
+  <a class="btn btn-ghost" href="{{ c.get_absolute_url }}">Details</a>
+</div>
+{% empty %}<p class="muted">No upcoming contests scheduled.</p>{% endfor %}
+
+<h2>⚪ Past</h2>
+<div class="card">
+  <table>
+    <tr><th>Contest</th><th>Started</th><th>Duration</th><th></th></tr>
+    {% for c in past %}
+    <tr>
+      <td><a href="{{ c.get_absolute_url }}">{{ c.title }}</a></td>
+      <td class="muted">{{ c.start_time|date:"M d, Y H:i" }}</td>
+      <td class="muted">{{ c.start_time|timesince:c.end_time }}</td>
+      <td><a href="{% url 'contest_standings' c.slug %}">standings →</a></td>
+    </tr>
+    {% empty %}<tr><td colspan="4" class="muted">No finished contests yet.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('.countdown').forEach(function (el) {
+  var end = parseInt(el.dataset.end, 10) * 1000;
+  function tick() {
+    var d = end - Date.now();
+    if (d <= 0) { el.textContent = 'now'; location.reload(); return; }
+    var s = Math.floor(d / 1000);
+    var days = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600),
+        m = Math.floor(s % 3600 / 60), sec = s % 60;
+    el.textContent = (days ? days + 'd ' : '') + String(h).padStart(2,'0') + ':' +
+                     String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+    setTimeout(tick, 1000);
+  }
+  tick();
+});
+</script>
+{% endblock %}

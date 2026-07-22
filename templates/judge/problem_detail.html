@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+{% block title %}{{ problem.code }} · {{ problem.title }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material.min.css">
+<style>main.container { max-width: 1560px; }</style>
+{% endblock %}
+{% block content %}
+
+{% if contest %}
+<div class="flash flash-info">
+  Solving as part of <a href="{{ contest.get_absolute_url }}"><b>{{ contest.title }}</b></a>
+  — submissions here count toward the <a href="{% url 'contest_standings' contest.slug %}">standings</a>.
+</div>
+{% endif %}
+
+<div class="problem-split">
+
+  <!-- ==================== LEFT: statement ==================== -->
+  <div class="split-left">
+    <div class="card statement">
+      <div class="spread" style="align-items:flex-start;">
+        <h1 class="split-title">
+          <span class="mono muted" style="font-size:0.85em;">{{ problem.code }}</span> · {{ problem.title }}
+          {% if solved %}<span class="tick" title="You solved this">✓</span>{% endif %}
+        </h1>
+        <span class="diff-{{ problem.difficulty }}" style="white-space:nowrap;">{{ problem.get_difficulty_display }}</span>
+      </div>
+      <div class="meta-chips" style="margin-bottom:14px;">
+        <span class="chip">⏱ {{ problem.time_limit }} s</span>
+        <span class="chip">💾 {{ problem.memory_limit }} MB</span>
+        {% for t in problem.tag_list %}<span class="tag">{{ t }}</span>{% endfor %}
+      </div>
+
+      <div class="statement-block">{{ problem.statement }}</div>
+      {% if problem.input_format %}<h3>Input</h3><div class="statement-block">{{ problem.input_format }}</div>{% endif %}
+      {% if problem.output_format %}<h3>Output</h3><div class="statement-block">{{ problem.output_format }}</div>{% endif %}
+      {% if problem.constraints %}<h3>Constraints</h3><div class="statement-block">{{ problem.constraints }}</div>{% endif %}
+
+      {% if samples %}
+        <h3>Samples</h3>
+        {% for s in samples %}
+          <div class="sample-grid">
+            <div class="sample-box">
+              <header>Input {{ forloop.counter }}
+                <button type="button" class="copy-btn" data-copy="in-{{ forloop.counter }}">copy</button>
+              </header>
+              <pre id="in-{{ forloop.counter }}">{{ s.input_data }}</pre>
+            </div>
+            <div class="sample-box">
+              <header>Output {{ forloop.counter }}
+                <button type="button" class="copy-btn" data-copy="out-{{ forloop.counter }}">copy</button>
+              </header>
+              <pre id="out-{{ forloop.counter }}">{{ s.expected_output }}</pre>
+            </div>
+          </div>
+          {% if s.explanation %}<p class="muted" style="margin-top:-4px;">{{ s.explanation }}</p>{% endif %}
+        {% endfor %}
+      {% endif %}
+
+      {% if problem.hint %}
+        <details class="hint"><summary>Show hint</summary>
+          <div class="statement-block muted" style="margin-top:6px;">{{ problem.hint }}</div>
+        </details>
+      {% endif %}
+
+      {% if problem.has_editorial %}
+        <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line-soft);">
+          {% if editorial_open %}
+            <a class="btn btn-ghost btn-small" href="{% url 'problem_editorial' problem.code %}">📖 Read the editorial</a>
+          {% elif editorial_reason == "live_contest" %}
+            <span class="chip" title="Hidden while a contest with this problem is running">📖 Editorial · 🔒 hidden during live contest</span>
+          {% else %}
+            <a class="chip" href="{% url 'problem_editorial' problem.code %}" title="Get Accepted to unlock">📖 Editorial · 🔒 solve to unlock</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- draggable divider -->
+  <div class="split-gutter" id="split-gutter" title="Drag to resize · double-click to reset"></div>
+
+  <!-- ==================== RIGHT: editor ==================== -->
+  <div class="split-right" id="submit">
+    {% if user.is_authenticated %}
+      <form method="post" action="{% url 'submit' problem.code %}" id="submit-form">
+        {% csrf_token %}
+        {% if contest %}<input type="hidden" name="contest" value="{{ contest.slug }}">{% endif %}
+
+        <div class="card editor-card">
+          <div class="editor-head">
+            <div>
+              <label for="id_language" style="margin-right:8px;">Language</label>
+              <select name="language" id="id_language">
+                <option value="c">C (gcc, -std=c11)</option>
+                <option value="cpp" selected>C++ (g++, -std=c++17)</option>
+                <option value="py">Python 3</option>
+              </select>
+            </div>
+            <span class="muted" style="font-size:0.8rem;">Ctrl+Enter = Run</span>
+          </div>
+
+          <div class="editor-wrap">
+            <textarea name="source_code" id="id_source_code" rows="16" spellcheck="false"></textarea>
+          </div>
+
+          <div class="test-panel open" id="test-panel">
+            <div class="test-panel-head" id="console-toggle" role="button" aria-expanded="true"
+                 title="Show / hide the test console">
+              <span class="chev">▸</span> 🧪 Console
+              <span class="muted" style="font-weight:500;text-transform:none;letter-spacing:0;">— test on samples{% if samples %} ({{ samples|length }}){% endif %} + custom input, nothing is recorded</span>
+              <span class="console-status" id="console-status"></span>
+            </div>
+            <div class="test-panel-body">
+              <div class="custom-input-area">
+                <textarea id="custom-input" placeholder="Custom input (optional)…"></textarea>
+              </div>
+              <div id="run-results" class="run-results" style="margin-top:10px;"></div>
+            </div>
+          </div>
+
+          <div class="editor-foot">
+            <button type="button" class="btn btn-ghost" id="run-btn">▶ Run</button>
+            <div style="display:flex; align-items:center; gap:12px;">
+              {% if my_last %}
+                <a class="muted" style="font-size:0.85rem;" href="{{ my_last.get_absolute_url }}">
+                  last try: <span class="badge badge-{{ my_last.verdict_class }}">{{ my_last.verdict }}</span></a>
+              {% endif %}
+              <button type="submit" class="btn" id="submit-btn">Submit solution</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    {% else %}
+      <div class="card editor-card" style="display:flex;align-items:center;justify-content:center;height:100%;">
+        <div style="text-align:center;padding:40px 20px;">
+          <div style="font-size:2.2rem;margin-bottom:10px;">{ }</div>
+          <h3 style="margin:0 0 6px;">Ready to solve it?</h3>
+          <p class="muted" style="margin:0 0 18px;">Log in to write, test and submit your solution.</p>
+          <a class="btn" href="{% url 'login' %}?next={{ request.path }}">Log in</a>
+          <a class="btn btn-ghost" style="margin-left:8px;" href="{% url 'register' %}">Create account</a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if user.is_authenticated %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script>
+/* Fallback CDN (jsDelivr) if cdnjs is unreachable */
+if (!window.CodeMirror) {
+  document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.css">');
+  document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/theme/material.css">');
+  document.write('<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.js"><\/script>');
+  document.write('<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/clike/clike.js"><\/script>');
+  document.write('<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/python/python.js"><\/script>');
+}
+</script>
+{{ starter_code|json_script:"starter-code" }}
+<script>
+(function () {
+  var STARTERS = JSON.parse(document.getElementById("starter-code").textContent);
+  var MODES = { c: "text/x-csrc", cpp: "text/x-c++src", py: "python" };
+  var RUN_URL = "{% url 'run_code' problem.code %}";
+
+  var ta = document.getElementById("id_source_code");
+  var langSel = document.getElementById("id_language");
+  var runBtn = document.getElementById("run-btn");
+  var submitBtn = document.getElementById("submit-btn");
+  var resultsEl = document.getElementById("run-results");
+  var customEl = document.getElementById("custom-input");
+  var csrf = document.querySelector("#submit-form [name=csrfmiddlewaretoken]").value;
+
+  /* ---- collapsible console (starts collapsed; opens on Run) ---- */
+  var panel = document.getElementById("test-panel");
+  var consoleToggle = document.getElementById("console-toggle");
+  var statusEl = document.getElementById("console-status");
+  function setPanel(open) {
+    panel.classList.toggle("open", open);
+    consoleToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  setPanel(false); /* JS available → start compact; without JS it stays open */
+  consoleToggle.addEventListener("click", function () {
+    setPanel(!panel.classList.contains("open"));
+  });
+  function setStatus(txt, ok) {
+    statusEl.textContent = txt || "";
+    statusEl.className = "console-status" + (txt ? (ok ? " ok" : " bad") : "");
+  }
+
+  var editor;
+  if (window.CodeMirror) {
+    editor = CodeMirror.fromTextArea(ta, {
+      mode: MODES[langSel.value],
+      theme: "material",
+      lineNumbers: true,
+      indentUnit: 4,
+      matchBrackets: true,
+      extraKeys: { "Ctrl-Enter": function () { runCode(); }, "Cmd-Enter": function () { runCode(); } }
+    });
+    setTimeout(function () { editor.refresh(); }, 60);
+  } else {
+    /* Both CDNs unreachable — degrade to the plain textarea so everything
+       still works (run, submit, starter templates). */
+    ta.style.cssText = "position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0;" +
+      "font-family:var(--mono);font-size:0.88rem;padding:12px;resize:none;background:#263238;color:#eee;";
+    editor = {
+      getValue: function () { return ta.value; },
+      setValue: function (v) { ta.value = v; },
+      save: function () {},
+      setOption: function () {},
+      refresh: function () {}
+    };
+    ta.addEventListener("keydown", function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); runCode(); }
+    });
+  }
+
+  function isStarter(v) {
+    v = v.trim();
+    if (v === "") return true;
+    return Object.values(STARTERS).some(function (s) { return s.trim() === v; });
+  }
+  if (isStarter(editor.getValue())) editor.setValue(STARTERS[langSel.value]);
+  langSel.addEventListener("change", function () {
+    editor.setOption("mode", MODES[langSel.value]);
+    if (isStarter(editor.getValue())) editor.setValue(STARTERS[langSel.value]);
+  });
+
+  function esc(s) {
+    var d = document.createElement("div");
+    d.textContent = s == null ? "" : s;
+    return d.innerHTML;
+  }
+  function box(title, content) {
+    return '<div class="sample-box"><header>' + esc(title) + '</header><pre>' + esc(content) + '</pre></div>';
+  }
+
+  function renderResults(data) {
+    var html = "";
+    if (!data.ok && data.compile_message) {
+      html += '<div class="compile-box"><h4>Compilation error</h4><pre>' +
+              esc(data.compile_message) + "</pre></div>";
+      resultsEl.innerHTML = html;
+      return;
+    }
+    (data.samples || []).forEach(function (s) {
+      var pass = s.verdict === "AC";
+      html += '<div class="run-line">' +
+        '<span class="' + (pass ? "rl-pass" : "rl-fail") + '">' + (pass ? "✓" : "✗") + "</span>" +
+        '<span class="rl-name">Sample ' + s.index + "</span>" +
+        '<span class="badge badge-' + (pass ? "ac" : s.verdict === "WA" ? "wa" : s.verdict === "TLE" || s.verdict === "MLE" ? "tle" : "re") + '">' + esc(s.verdict) + "</span>" +
+        (s.detail ? '<span class="muted" style="font-size:0.8rem;">' + esc(s.detail) + "</span>" : "") +
+        '<span class="rl-time">' + s.time_ms + " ms</span>";
+      if (!pass) {
+        html += '<div class="run-io">' +
+          box("Input", s.input) +
+          box("Expected", s.expected) +
+          box("Your output", s.verdict === "WA" ? s.actual : (s.stderr || "—")) +
+          "</div>";
+      }
+      html += "</div>";
+    });
+    if (data.custom) {
+      var c = data.custom;
+      var ok = c.status === "OK";
+      html += '<div class="custom-out-box"><header><span>Custom input — ' +
+        (ok ? '<span class="rl-pass">ran fine</span>' : '<span class="rl-fail">' + esc(c.status) + "</span>") +
+        "</span><span>" + c.time_ms + " ms</span></header><pre>" +
+        esc(c.stdout || "(no output)") +
+        (c.stderr && !ok ? "\n--- stderr ---\n" + esc(c.stderr) : "") +
+        "</pre></div>";
+      if (c.detail && !ok) html += '<p class="muted" style="font-size:0.82rem;margin:4px 0 0;">' + esc(c.detail) + "</p>";
+    }
+    if (!html) html = '<p class="muted">No sample tests on this problem — add a custom input to test.</p>';
+    resultsEl.innerHTML = html;
+  }
+
+  function summarize(data) {
+    if (!data.ok && data.compile_message) return setStatus("✗ compile error", false);
+    var s = data.samples || [];
+    if (s.length) {
+      var passed = 0, firstFail = null;
+      s.forEach(function (x) {
+        if (x.verdict === "AC") passed++;
+        else if (!firstFail) firstFail = x;
+      });
+      if (!firstFail) return setStatus("✓ " + passed + "/" + s.length + " samples passed", true);
+      return setStatus("✗ " + firstFail.verdict + " on sample " + firstFail.index, false);
+    }
+    if (data.custom) {
+      return data.custom.status === "OK"
+        ? setStatus("✓ ran fine", true)
+        : setStatus("✗ " + data.custom.status, false);
+    }
+    setStatus("", true);
+  }
+
+  var running = false;
+  function runCode() {
+    if (running) return;
+    running = true;
+    editor.save();
+    var body = new URLSearchParams();
+    body.append("language", langSel.value);
+    body.append("source_code", editor.getValue());
+    var custom = customEl.value;
+    if (custom.trim() !== "") { body.append("has_custom", "1"); body.append("custom_input", custom); }
+
+    setPanel(true);                 /* results are about to appear */
+    setStatus("running…", true);
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<span class="spinner dark"></span> Running…';
+    resultsEl.innerHTML = "";
+
+    fetch(RUN_URL, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "X-CSRFToken": csrf, "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    })
+      .then(function (r) { return r.json().then(function (d) { return { s: r.status, d: d }; }); })
+      .then(function (res) {
+        if (res.d.message && !res.d.ok && !res.d.compile_message) {
+          resultsEl.innerHTML = '<p class="muted" style="color:var(--wa);">' + esc(res.d.message) + "</p>";
+          setStatus("✗ " + (res.d.error === "cooldown" ? "wait a moment" : "couldn't run"), false);
+        } else {
+          renderResults(res.d);
+          summarize(res.d);
+        }
+      })
+      .catch(function () {
+        resultsEl.innerHTML = '<p class="muted" style="color:var(--wa);">Network problem while running — check your connection and try again.</p>';
+        setStatus("✗ network error", false);
+      })
+      .finally(function () {
+        running = false;
+        runBtn.disabled = false;
+        runBtn.innerHTML = "▶ Run";
+      });
+  }
+  runBtn.addEventListener("click", runCode);
+
+  document.getElementById("submit-form").addEventListener("submit", function (e) {
+    if (submitBtn.disabled) { e.preventDefault(); return; }
+    editor.save();
+    if (!editor.getValue().trim()) {
+      e.preventDefault();
+      setPanel(true);
+      resultsEl.innerHTML = '<p class="muted" style="color:var(--wa);">The editor is empty — write your solution first.</p>';
+      return;
+    }
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner"></span> Judging…';
+  });
+
+  /* Back/forward cache restores the page with buttons still disabled —
+     always reset them so nothing looks stuck or missing. */
+  window.addEventListener("pageshow", function () {
+    running = false;
+    runBtn.disabled = false;
+    runBtn.innerHTML = "▶ Run";
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = "Submit solution";
+  });
+})();
+</script>
+{% endif %}
+<script>
+document.querySelectorAll(".copy-btn").forEach(function (b) {
+  b.addEventListener("click", function () {
+    var txt = document.getElementById(b.dataset.copy).textContent;
+    navigator.clipboard.writeText(txt).then(function () {
+      b.textContent = "copied!";
+      setTimeout(function () { b.textContent = "copy"; }, 1200);
+    });
+  });
+});
+
+/* ---- draggable split divider (ratio saved in localStorage) ---- */
+(function () {
+  var split = document.querySelector(".problem-split");
+  var gutter = document.getElementById("split-gutter");
+  var left = document.querySelector(".split-left");
+  if (!split || !gutter || !left) return;
+  var KEY = "oj-split-ratio";
+  var dragging = false;
+  var refreshTimer = null;
+
+  function apply(pct) {
+    pct = Math.min(75, Math.max(25, pct));
+    left.style.width = pct + "%";
+    return pct;
+  }
+  try {
+    var saved = parseFloat(localStorage.getItem(KEY));
+    if (!isNaN(saved)) apply(saved);
+  } catch (e) { /* localStorage unavailable (private mode) — ignore */ }
+
+  function refreshEditor() {
+    var cmEl = document.querySelector(".CodeMirror");
+    if (cmEl && cmEl.CodeMirror) cmEl.CodeMirror.refresh();
+  }
+  function pctFromX(x) {
+    var r = split.getBoundingClientRect();
+    return ((x - r.left) / r.width) * 100;
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    var x = e.touches ? e.touches[0].clientX : e.clientX;
+    apply(pctFromX(x));
+    if (!refreshTimer) {
+      refreshTimer = setTimeout(function () { refreshTimer = null; refreshEditor(); }, 120);
+    }
+    if (e.cancelable) e.preventDefault();
+  }
+  function onUp() {
+    if (!dragging) return;
+    dragging = false;
+    split.classList.remove("dragging");
+    var pct = parseFloat(left.style.width);
+    try { if (!isNaN(pct)) localStorage.setItem(KEY, pct.toFixed(1)); } catch (e) {}
+    refreshEditor();
+  }
+  function onDown(e) {
+    dragging = true;
+    split.classList.add("dragging");
+    if (e.cancelable) e.preventDefault();
+  }
+  gutter.addEventListener("mousedown", onDown);
+  gutter.addEventListener("touchstart", onDown, { passive: false });
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("touchmove", onMove, { passive: false });
+  window.addEventListener("mouseup", onUp);
+  window.addEventListener("touchend", onUp);
+  gutter.addEventListener("dblclick", function () {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    left.style.width = "50%";
+    refreshEditor();
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Online Judge{% endblock %} · Online Judge</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%232563eb'/><text x='50' y='68' font-size='44' text-anchor='middle' fill='white' font-family='monospace' font-weight='bold'>OJ</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+<nav class="topbar">
+  <div class="container topbar-inner">
+    <a class="brand" href="{% url 'home' %}"><span class="brand-mark">OJ</span> Online Judge</a>
+    <div class="nav-links">
+      <a href="{% url 'problem_list' %}" class="{% if request.resolver_match.url_name == 'problem_list' %}active{% endif %}">Problems</a>
+      <a href="{% url 'contest_list' %}" class="{% if 'contest' in request.resolver_match.url_name %}active{% endif %}">Contests</a>
+      <a href="{% url 'leaderboard' %}" class="{% if request.resolver_match.url_name == 'leaderboard' %}active{% endif %}">Leaderboard</a>
+      <a href="{% url 'submission_list' %}" class="{% if 'submission' in request.resolver_match.url_name %}active{% endif %}">Submissions</a>
+      <a href="{% url 'chat_global' %}" class="{% if 'chat' in request.resolver_match.url_name %}active{% endif %}">Chat</a>
+    </div>
+    <div class="nav-user">
+      {% if user.is_authenticated %}
+        {% if user.is_staff %}<a href="{% url 'admin:index' %}" class="nav-admin">Admin</a>{% endif %}
+        <a href="{% url 'profile' user.username %}" class="nav-username">{{ user.username }}</a>
+        <form method="post" action="{% url 'logout' %}" class="inline-form">{% csrf_token %}
+          <button type="submit" class="linklike">Logout</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}">Login</a>
+        <a href="{% url 'register' %}" class="btn btn-small">Register</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<main class="container">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="flash flash-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <span class="brand-mark small">OJ</span> Online Judge — a minimal judge for C, C++ &amp; Python ·
+    <a href="{% url 'problem_list' %}">practice</a> ·
+    <a href="{% url 'contest_list' %}">compete</a>
+  </div>
+</footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>

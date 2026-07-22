@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Submissions{% endblock %}
+{% block content %}
+<h1>Submissions</h1>
+
+<form method="get" class="filter-bar">
+  {% if user.is_authenticated %}
+    <label style="display:flex;align-items:center;gap:5px;margin:0;font-weight:500;">
+      <input type="checkbox" name="mine" value="1" style="width:auto;" {% if current.mine %}checked{% endif %}> mine only
+    </label>
+  {% endif %}
+  <input type="text" name="user" placeholder="username" value="{{ current.user }}" style="max-width:140px;">
+  <input type="text" name="problem" placeholder="problem code" value="{{ current.problem }}" style="max-width:140px;">
+  <select name="verdict">
+    <option value="">All verdicts</option>
+    {% for code, name in verdicts %}
+      <option value="{{ code }}" {% if current.verdict == code %}selected{% endif %}>{{ name }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-small" type="submit">Filter</button>
+</form>
+
+<div class="card">
+  <table>
+    <tr>
+      <th>#</th><th>When</th><th>Who</th><th>Problem</th><th>Lang</th>
+      <th>Verdict</th><th>Tests</th><th class="num">Time</th>
+    </tr>
+    {% for s in page %}
+    <tr>
+      <td class="mono"><a href="{{ s.get_absolute_url }}">{{ s.pk }}</a></td>
+      <td class="muted">{{ s.submitted_at|date:"M d, H:i" }}</td>
+      <td><a href="{% url 'profile' s.user.username %}">{{ s.user.username }}</a></td>
+      <td class="mono"><a href="{{ s.problem.get_absolute_url }}">{{ s.problem.code }}</a>
+          {% if s.contest %}<span class="badge badge-outline" title="{{ s.contest.title }}">contest</span>{% endif %}</td>
+      <td>{{ s.get_language_display }}</td>
+      <td><a href="{{ s.get_absolute_url }}"><span class="badge badge-{{ s.verdict_class }}">{{ s.get_verdict_display }}</span></a></td>
+      <td>{{ s.passed_tests }}/{{ s.total_tests }}</td>
+      <td class="num">{% if s.exec_time_ms is not None %}{{ s.exec_time_ms }} ms{% else %}—{% endif %}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="8" class="muted">No submissions found.</td></tr>
+    {% endfor %}
+  </table>
+
+  {% if page.paginator.num_pages > 1 %}
+  <div class="pagination">
+    {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}&mine={{ current.mine }}&user={{ current.user }}&problem={{ current.problem }}&verdict={{ current.verdict }}">‹ prev</a>{% endif %}
+    <span class="cur">{{ page.number }} / {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a href="?page={{ page.next_page_number }}&mine={{ current.mine }}&user={{ current.user }}&problem={{ current.problem }}&verdict={{ current.verdict }}">next ›</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

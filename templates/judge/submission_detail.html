@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Submission #{{ sub.pk }}{% endblock %}
+{% block content %}
+
+<div class="verdict-banner vb-{{ sub.verdict_class }}">
+  <div>
+    <h2><span class="vb-icon">{% if sub.verdict == 'AC' %}✓{% elif sub.verdict == 'CE' %}⚙{% elif sub.verdict == 'TLE' or sub.verdict == 'MLE' %}⏱{% elif sub.verdict == 'PD' or sub.verdict == 'JG' %}⏳{% else %}✗{% endif %}</span> {{ sub.get_verdict_display }}</h2>
+    <span style="opacity:.9;">
+      Submission #{{ sub.pk }} ·
+      <a href="{% url 'profile' sub.user.username %}" style="color:#fff;text-decoration:underline;">{{ sub.user.username }}</a>
+      → <a href="{{ sub.problem.get_absolute_url }}" style="color:#fff;text-decoration:underline;">{{ sub.problem.code }} · {{ sub.problem.title }}</a>
+      · {{ sub.get_language_display }}
+      {% if sub.contest %} · in {{ sub.contest.title }}{% endif %}
+    </span>
+  </div>
+  <div style="text-align:right;">
+    <div><b>{{ sub.passed_tests }}/{{ sub.total_tests }}</b> tests passed</div>
+    {% if sub.exec_time_ms is not None %}<div>{{ sub.exec_time_ms }} ms</div>{% endif %}
+  </div>
+</div>
+
+{% if sub.suggestion %}
+<div class="suggestion-card">
+  <h3>💡 Suggestions</h3>
+  <pre>{{ sub.suggestion }}</pre>
+  {% if sub.is_ac and editorial_open %}
+    <p style="margin:10px 0 0;">
+      <a class="btn btn-ghost btn-small" href="{% url 'problem_editorial' sub.problem.code %}">📖 Compare with the editorial</a>
+    </p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if sub.compile_message %}
+<div class="card">
+  <h3 style="margin-top:0;">Compiler / judge output</h3>
+  <pre class="plain">{{ sub.compile_message }}</pre>
+</div>
+{% endif %}
+
+{% if sub.test_results %}
+<div class="card">
+  <h3 style="margin-top:0;">Test results</h3>
+  <table>
+    <tr><th>Test</th><th>Verdict</th><th class="num">Time</th><th>Notes</th></tr>
+    {% for t in sub.test_results %}
+    <tr>
+      <td>#{{ t.index }} {% if t.is_sample %}<span class="badge badge-outline">sample</span>{% endif %}</td>
+      <td class="{% if t.verdict == 'AC' %}test-ac{% else %}test-bad{% endif %}">{{ t.verdict }}</td>
+      <td class="num">{{ t.time_ms }} ms</td>
+      <td class="muted">{{ t.detail }}</td>
+    </tr>
+    {% if t.verdict != 'AC' and t.is_sample and t.input_preview %}
+    <tr>
+      <td colspan="4">
+        <div class="sample-grid">
+          <div class="sample-box"><header>Input</header><pre>{{ t.input_preview }}</pre></div>
+          <div class="sample-box"><header>Expected</header><pre>{{ t.expected_preview }}</pre></div>
+        </div>
+        {% if t.actual_preview %}
+        <div class="sample-box" style="margin-top:10px;"><header>Your output</header><pre>{{ t.actual_preview }}</pre></div>
+        {% endif %}
+      </td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+  </table>
+  {% if sub.total_tests > sub.test_results|length %}
+    <p class="muted" style="margin-bottom:0;">Judging stopped at the first failed test — remaining tests were not run.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if can_view_source %}
+<div class="card">
+  <div class="spread">
+    <h3 style="margin:0;">Source code</h3>
+    <a class="btn btn-small btn-ghost" href="{{ sub.problem.get_absolute_url }}#submit">Submit again</a>
+  </div>
+  <pre class="codeview">{{ sub.source_code }}</pre>
+</div>
+{% else %}
+<p class="muted">Source code is only visible to its author and staff.</p>
+{% endif %}
+{% endblock %}

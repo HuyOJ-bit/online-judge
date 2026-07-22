@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<h1>Log in</h1>
+<div class="card form-narrow">
+  {% if form.errors %}
+    <div class="flash flash-error">Wrong username or password — both are case-sensitive.</div>
+  {% endif %}
+  <form method="post">
+    {% csrf_token %}
+    <label for="id_username">Username</label>
+    <input type="text" name="username" id="id_username" autofocus required>
+    <label for="id_password">Password</label>
+    <input type="password" name="password" id="id_password" required>
+    <input type="hidden" name="next" value="{{ next }}">
+    <p style="margin-top:16px;"><button class="btn" type="submit">Log in</button></p>
+  </form>
+  <p class="muted">New here? <a href="{% url 'register' %}">Create an account</a>.</p>
+</div>
+{% endblock %}
