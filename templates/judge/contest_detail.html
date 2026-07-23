@@ -48,7 +48,7 @@
 <h2>Problems</h2>
 {% if show_problems %}
 <div class="card">
-  <table>
+  <div class="table-scroll"><table>
     <tr><th></th><th>#</th><th>Problem</th><th>Difficulty</th><th class="num">Points</th></tr>
     {% for cp in contest_problems %}
     <tr>
@@ -62,7 +62,7 @@
       <td class="num">{{ cp.points }}</td>
     </tr>
     {% empty %}<tr><td colspan="5" class="muted">No problems added yet.</td></tr>{% endfor %}
-  </table>
+  </table></div>
 </div>
 {% elif contest.status == 'upcoming' %}
 <p class="muted">Problems will be revealed when the contest starts.</p>

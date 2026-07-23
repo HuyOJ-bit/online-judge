@@ -16,7 +16,7 @@
 </form>
 
 <div class="card">
-  <table>
+  <div class="table-scroll"><table>
     <tr>
       <th style="width:34px;"></th>
       <th>Code</th><th>Title</th><th>Tags</th><th>Difficulty</th>
@@ -34,6 +34,6 @@
     {% empty %}
     <tr><td colspan="6" class="muted">No problems match.</td></tr>
     {% endfor %}
-  </table>
+  </table></div>
 </div>
 {% endblock %}

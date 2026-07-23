@@ -9,7 +9,7 @@
 </p>
 
 <div class="card standings">
-  <table>
+  <div class="table-scroll"><table>
     <tr>
       <th>#</th><th>Participant</th><th class="num">Solved</th><th class="num">Penalty</th>
       {% for cp in contest_problems %}
@@ -35,7 +35,7 @@
     {% empty %}
     <tr><td colspan="{{ contest_problems|length|add:'4' }}" class="muted">No participants yet.</td></tr>
     {% endfor %}
-  </table>
+  </table></div>
 </div>
 
 {% if contest.is_running %}

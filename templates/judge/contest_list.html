@@ -29,7 +29,7 @@
 
 <h2>⚪ Past</h2>
 <div class="card">
-  <table>
+  <div class="table-scroll"><table>
     <tr><th>Contest</th><th>Started</th><th>Duration</th><th></th></tr>
     {% for c in past %}
     <tr>
@@ -39,7 +39,7 @@
       <td><a href="{% url 'contest_standings' c.slug %}">standings →</a></td>
     </tr>
     {% empty %}<tr><td colspan="4" class="muted">No finished contests yet.</td></tr>{% endfor %}
-  </table>
+  </table></div>
 </div>
 {% endblock %}
 {% block scripts %}

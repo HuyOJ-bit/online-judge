@@ -21,7 +21,7 @@
 </form>
 
 <div class="card">
-  <table>
+  <div class="table-scroll"><table>
     <tr>
       <th>#</th><th>When</th><th>Who</th><th>Problem</th><th>Lang</th>
       <th>Verdict</th><th>Tests</th><th class="num">Time</th>
@@ -41,7 +41,7 @@
     {% empty %}
     <tr><td colspan="8" class="muted">No submissions found.</td></tr>
     {% endfor %}
-  </table>
+  </table></div>
 
   {% if page.paginator.num_pages > 1 %}
   <div class="pagination">

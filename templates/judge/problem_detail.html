@@ -14,10 +14,17 @@
 </div>
 {% endif %}
 
+<!-- Mobile / narrow screens: switch between statement and editor.
+     Plain anchor links when JS is off; enhanced into real tabs by JS. -->
+<div class="mobile-tabs" id="mobile-tabs" role="tablist" aria-label="Problem view">
+  <a class="mtab active" href="#statement-pane" data-view="desc" role="tab" aria-selected="true">📄 Description</a>
+  <a class="mtab" href="#submit" data-view="code" role="tab" aria-selected="false"><span class="mtab-ico">&lt;/&gt;</span> Code</a>
+</div>
+
 <div class="problem-split">
 
   <!-- ==================== LEFT: statement ==================== -->
-  <div class="split-left">
+  <div class="split-left" id="statement-pane">
     <div class="card statement">
       <div class="spread" style="align-items:flex-start;">
         <h1 class="split-title">
@@ -98,7 +105,7 @@
                 <option value="py">Python 3</option>
               </select>
             </div>
-            <span class="muted" style="font-size:0.8rem;">Ctrl+Enter = Run</span>
+            <span class="muted kbd-hint" style="font-size:0.8rem;">Ctrl+Enter = Run</span>
           </div>
 
           <div class="editor-wrap">
@@ -109,7 +116,7 @@
             <div class="test-panel-head" id="console-toggle" role="button" aria-expanded="true"
                  title="Show / hide the test console">
               <span class="chev">▸</span> 🧪 Console
-              <span class="muted" style="font-weight:500;text-transform:none;letter-spacing:0;">— test on samples{% if samples %} ({{ samples|length }}){% endif %} + custom input, nothing is recorded</span>
+              <span class="muted console-hint" style="font-weight:500;text-transform:none;letter-spacing:0;">— test on samples{% if samples %} ({{ samples|length }}){% endif %} + custom input, nothing is recorded</span>
               <span class="console-status" id="console-status"></span>
             </div>
             <div class="test-panel-body">
@@ -205,6 +212,9 @@ if (!window.CodeMirror) {
       extraKeys: { "Ctrl-Enter": function () { runCode(); }, "Cmd-Enter": function () { runCode(); } }
     });
     setTimeout(function () { editor.refresh(); }, 60);
+    window.addEventListener("resize", function () {
+      setTimeout(function () { editor.refresh(); }, 120);
+    });
   } else {
     /* Both CDNs unreachable — degrade to the plain textarea so everything
        still works (run, submit, starter templates). */
@@ -444,6 +454,76 @@ document.querySelectorAll(".copy-btn").forEach(function (b) {
     left.style.width = "50%";
     refreshEditor();
   });
+})();
+
+/* ---- mobile Description | Code tabs (≤1080px) ---- */
+(function () {
+  var split = document.querySelector(".problem-split");
+  var bar = document.getElementById("mobile-tabs");
+  if (!split || !bar) return;
+  var tabs = Array.prototype.slice.call(bar.querySelectorAll(".mtab"));
+  var topbar = document.querySelector(".topbar");
+  var mq = window.matchMedia("(max-width: 1080px)");
+  var KEY = "oj-tab:" + location.pathname;
+  var current = "desc";
+
+  function refreshCM() {
+    var el = document.querySelector(".CodeMirror");
+    if (el && el.CodeMirror) setTimeout(function () { el.CodeMirror.refresh(); }, 40);
+  }
+  function jumpTop() {
+    /* html has scroll-behavior:smooth — jump instantly so measure() reads
+       the settled position, then restore. */
+    var de = document.documentElement, prev = de.style.scrollBehavior;
+    de.style.scrollBehavior = "auto";
+    window.scrollTo(0, 0);
+    de.style.scrollBehavior = prev;
+  }
+  function measure() {
+    if (topbar) document.documentElement.style.setProperty("--topbar-h", topbar.offsetHeight + "px");
+    /* Distance from viewport top to where the editor pane starts: everything
+       above it (topbar, banners, tab bar) + breathing room. */
+    split.style.setProperty("--code-top", Math.round(bar.getBoundingClientRect().bottom + 14) + "px");
+  }
+  function setView(v, persist, skipJump) {
+    current = v === "code" ? "code" : "desc";
+    split.classList.add("js-tabs");
+    split.classList.toggle("view-code", current === "code");
+    split.classList.toggle("view-desc", current === "desc");
+    tabs.forEach(function (t) {
+      var on = t.getAttribute("data-view") === current;
+      t.classList.toggle("active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    if (mq.matches) {
+      if (!skipJump) jumpTop();
+      measure();
+      if (current === "code") refreshCM();
+    }
+    if (persist) { try { sessionStorage.setItem(KEY, current); } catch (e) {} }
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener("click", function (e) {
+      e.preventDefault();
+      setView(t.getAttribute("data-view"), true);
+    });
+  });
+
+  var saved = null;
+  try { saved = sessionStorage.getItem(KEY); } catch (e) {}
+  setView(saved === "code" ? "code" : "desc", false, true);
+
+  var rt = null;
+  function onResize() {
+    if (!mq.matches) return;
+    if (rt) clearTimeout(rt);
+    rt = setTimeout(function () { measure(); if (current === "code") refreshCM(); }, 120);
+  }
+  window.addEventListener("resize", onResize);
+  window.addEventListener("orientationchange", onResize);
+  var onMQ = function () { setView(current, false, true); };
+  if (mq.addEventListener) mq.addEventListener("change", onMQ);
+  else if (mq.addListener) mq.addListener(onMQ);
 })();
 </script>
 {% endblock %}

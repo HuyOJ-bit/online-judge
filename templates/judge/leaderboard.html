@@ -5,7 +5,7 @@
 <p class="muted">Ranked by distinct problems solved — ties go to fewer total submissions.</p>
 
 <div class="card">
-  <table>
+  <div class="table-scroll"><table>
     <tr>
       <th style="width:70px;">Rank</th>
       <th>User</th>
@@ -31,7 +31,7 @@
     {% empty %}
     <tr><td colspan="5" class="muted">No submissions yet — the leaderboard fills up as people solve problems.</td></tr>
     {% endfor %}
-  </table>
+  </table></div>
 
   {% if page.paginator.num_pages > 1 %}
   <div class="pagination">

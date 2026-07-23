@@ -28,7 +28,7 @@
 
     <div class="card">
       <h2 style="margin-top:0;">Recent submissions</h2>
-      <table class="table-plain">
+      <div class="table-scroll"><table class="table-plain">
         {% for s in recent %}
         <tr>
           <td class="mono"><a href="{{ s.get_absolute_url }}">#{{ s.pk }}</a></td>
@@ -38,7 +38,7 @@
           <td class="muted">{{ s.submitted_at|timesince }} ago</td>
         </tr>
         {% empty %}<tr><td class="muted">No submissions yet.</td></tr>{% endfor %}
-      </table>
+      </table></div>
       <p style="margin-bottom:0;"><a class="muted" href="{% url 'submission_list' %}?user={{ person.username }}">all submissions by {{ person.username }} →</a></p>
     </div>
   </div>
@@ -46,12 +46,12 @@
   <div>
     <div class="card">
       <h2 style="margin-top:0;">Stats</h2>
-      <table class="table-plain">
+      <div class="table-scroll"><table class="table-plain">
         <tr><td>Total submissions</td><td class="num"><b>{{ total_submissions }}</b></td></tr>
         {% for v in verdict_stats %}
         <tr><td><span class="badge badge-outline">{{ v.verdict }}</span></td><td class="num">{{ v.n }}</td></tr>
         {% endfor %}
-      </table>
+      </table></div>
     </div>
   </div>
 </div>

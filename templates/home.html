@@ -36,7 +36,7 @@
         <h2 style="margin-top:0;">Recent problems</h2>
         <a href="{% url 'problem_list' %}" class="muted">all problems →</a>
       </div>
-      <table class="table-plain">
+      <div class="table-scroll"><table class="table-plain">
         <tr><th></th><th>Code</th><th>Title</th><th>Difficulty</th></tr>
         {% for p in recent_problems %}
         <tr>
@@ -48,7 +48,7 @@
         {% empty %}
         <tr><td colspan="4" class="muted">No problems yet — an admin can add some in the admin panel.</td></tr>
         {% endfor %}
-      </table>
+      </table></div>
     </div>
 
     <div class="card">
@@ -56,7 +56,7 @@
         <h2 style="margin-top:0;">Recent submissions</h2>
         <a href="{% url 'submission_list' %}" class="muted">all submissions →</a>
       </div>
-      <table class="table-plain">
+      <div class="table-scroll"><table class="table-plain">
         {% for s in recent_submissions %}
         <tr>
           <td><a href="{% url 'profile' s.user.username %}">{{ s.user.username }}</a></td>
@@ -68,7 +68,7 @@
         {% empty %}
         <tr><td class="muted">No submissions yet — be the first!</td></tr>
         {% endfor %}
-      </table>
+      </table></div>
     </div>
   </div>
 

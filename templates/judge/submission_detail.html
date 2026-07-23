@@ -41,7 +41,7 @@
 {% if sub.test_results %}
 <div class="card">
   <h3 style="margin-top:0;">Test results</h3>
-  <table>
+  <div class="table-scroll"><table>
     <tr><th>Test</th><th>Verdict</th><th class="num">Time</th><th>Notes</th></tr>
     {% for t in sub.test_results %}
     <tr>
@@ -64,7 +64,7 @@
     </tr>
     {% endif %}
     {% endfor %}
-  </table>
+  </table></div>
   {% if sub.total_tests > sub.test_results|length %}
     <p class="muted" style="margin-bottom:0;">Judging stopped at the first failed test — remaining tests were not run.</p>
   {% endif %}
