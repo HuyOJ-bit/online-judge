@@ -1,143 +1,426 @@
-# Online Judge — minimal, self-hosted
+<div align="center">
 
-A minimalistic online judge built with **Django**. Contestants solve problems in
-**C, C++ and Python**, test code before submitting, compete in contests with
-ICPC-style standings, and talk in a built-in platform chat. Everything is
-managed through the **Django admin panel** — problems, test cases, contests,
-users, submissions.
+# 🚀 Online Judge
 
-## Tech stack
+### A modern, lightweight, self-hosted Online Judge platform built with Django.
+
+Practice • Compete • Learn
+
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?logo=python&logoColor=white)]()
+[![Django](https://img.shields.io/badge/Django-4.2%20LTS-092E20?logo=django)]()
+[![License](https://img.shields.io/badge/License-MIT-green.svg)]()
+[![Platform](https://img.shields.io/badge/Platform-Linux-blue)]()
+[![Status](https://img.shields.io/badge/Status-Active-success)]()
+
+**Solve coding problems. Host contests. Judge code instantly.**
+
+</div>
+
+---
+
+# ✨ Overview
+
+Online Judge is an open-source competitive programming platform inspired by Codeforces, AtCoder, and LeetCode.
+
+It allows educators, universities, coding clubs, and organizations to host programming contests while providing a modern environment for practicing algorithmic problem solving.
+
+The entire platform is powered by **Django**, requiring only two Python dependencies while remaining highly extensible.
+
+---
+
+# 🚀 Features
+
+## 📝 Problem Management
+
+- Rich Markdown problem statements
+- Constraints & explanations
+- Input / Output specifications
+- Hints
+- Difficulty levels
+- Tags
+- Sample test cases
+- Hidden judge test cases
+- Per-problem time & memory limits
+
+---
+
+## ⚡ Online Judging
+
+Supports
+
+- C (C11)
+- C++17
+- Python 3
+
+Verdicts
+
+- ✅ Accepted
+- ❌ Wrong Answer
+- ⏱ Time Limit Exceeded
+- 💾 Memory Limit Exceeded
+- ⚠ Runtime Error
+- 🔨 Compilation Error
+
+Each submission includes
+
+- execution time
+- memory usage
+- failed testcase
+- detailed verdict explanation
+
+---
+
+## ▶ Run Before Submit
+
+Execute code against
+
+- Sample tests
+- Custom input
+
+without creating an official submission.
+
+Similar to
+
+- LeetCode
+- Codeforces
+- AtCoder
+
+---
+
+## 🏆 Contest System
+
+- ICPC scoring
+- Contest registration
+- Countdown timer
+- Hidden problems
+- Automatic reveal
+- Live standings
+- Penalty calculation
+
+---
+
+## 📖 Editorial System
+
+Editorials unlock automatically after solving a problem.
+
+Supports
+
+- Explanation
+- Reference solution
+- Multiple languages
+
+Editorials remain hidden while contests are running.
+
+---
+
+## 📈 Leaderboard
+
+Global ranking based on
+
+- Distinct solved problems
+- Acceptance rate
+- Submission count
+
+---
+
+## 💬 Built-in Chat
+
+- Global chat
+- Contest chat
+- AJAX polling
+- No WebSockets required
+
+---
+
+## 🔐 Authentication
+
+- Registration
+- Login
+- User profiles
+- Solved history
+- Submission statistics
+
+---
+
+## ⚙ Admin Dashboard
+
+Everything is managed from Django Admin.
+
+- Problems
+- Test Cases
+- Contests
+- Users
+- Editorials
+- Submissions
+- Rejudge
+- Verdict statistics
+
+---
+
+# 🏗 Architecture
+
+```
+                +----------------+
+                |    Browser     |
+                +--------+-------+
+                         |
+                Django Templates
+                         |
+                +--------v--------+
+                | Django Backend  |
+                +--------+--------+
+                         |
+          +--------------+--------------+
+          |                             |
+     Local Judge                  Judge0 Backend
+          |                             |
+   gcc / g++ / python3           Judge0 REST API
+          |
+      SQLite / MySQL
+```
+
+---
+
+# 🛠 Technology Stack
 
 | Layer | Technology |
-|---|---|
-| Language | Python 3 (3.9 – 3.12) |
-| Web framework | **Django 4.2 LTS** — views, ORM, auth/sessions, forms, and the built-in admin as the management panel |
-| Database | **SQLite** by default (single file, zero setup) — optional MySQL support is available via `DATABASES` |
-| Judging engine | Custom Python engine with **two pluggable backends**: `local` (compiles/runs via `subprocess` with POSIX `resource` rlimits — `gcc -O2 -std=c11`, `g++ -O2 -std=c++17`, `python3`) and `judge0` (Judge0 CE REST API client built on `requests`) |
-| Verdict pipeline | Normalized output comparison, first-failure stop, per-test results (time, signal/exception details), rule-based suggestion generator per verdict & language |
-| Frontend | Server-rendered **Django templates** + one hand-written CSS design system (custom properties, no CSS framework) + **vanilla JavaScript** (no build step, no npm) |
-| Code editor | **CodeMirror 5** (Material theme) from cdnjs, with jsDelivr fallback CDN and plain-textarea degradation; LeetCode-style resizable split view (ratio in `localStorage`) |
-| Typography | Inter + JetBrains Mono via Google Fonts |
-| Chat | AJAX polling with `fetch` every 2.5 s — no WebSockets, works on any plain WSGI host |
-| Deployment | WSGI host, static files via `collectstatic` |
-| Python dependencies | Exactly two: `Django==4.2.16`, `requests` |
+|--------|------------|
+| Backend | Django 4.2 LTS |
+| Language | Python 3 |
+| Database | SQLite / MySQL |
+| Judge | Local Runner / Judge0 |
+| Editor | CodeMirror 5 |
+| Frontend | Django Templates |
+| Styling | Custom CSS |
+| JavaScript | Vanilla JS |
+| Chat | AJAX Polling |
+| Deployment | WSGI |
 
-## Features
+---
 
-| Area | What you get |
-|---|---|
-| Problems | Statement, input/output specs, constraints, hints, tags, difficulty, per-problem time & memory limits, sample + hidden test cases |
-| Judging | C (gcc, C11), C++ (g++, C++17), Python 3 — verdicts: AC, WA, TLE, MLE, RE, CE with per-test results |
-| Test before submit | ▶ Run button executes code against the sample tests and/or custom input instantly — no penalty, nothing recorded (like Codeforces/LeetCode) |
-| Suggestions | Every verdict comes with beginner-friendly, language-specific advice (like the big judges do) |
-| Contests | Registration, countdown timer, hidden problems revealed at start, ICPC standings (solved count + penalty) |
-| Editorials | Admin-written solution write-ups + reference code per problem — unlock after the user gets AC, hidden for everyone while a contest containing the problem runs |
-| Leaderboard | Site-wide ranking by distinct problems solved (ties → fewer submissions), with acceptance rate |
-| Chat | Global room + per-contest rooms, lightweight AJAX polling (no WebSockets needed) |
-| Admin panel | Add problems/test cases inline, schedule contests, browse users & submissions, re-judge action, colored verdict badges |
-| Accounts | Register/login, profiles with solved problems and verdict stats |
+# 📦 Installation
 
-## Quick start (local)
+## Clone
 
 ```bash
-python3 -m venv venv && source venv/bin/activate
+git clone https://github.com/ragibcs/online-judge.git
+
+cd online-judge
+```
+
+## Create Virtual Environment
+
+```bash
+python -m venv venv
+
+source venv/bin/activate
+```
+
+Windows
+
+```powershell
+venv\Scripts\activate
+```
+
+---
+
+## Install Dependencies
+
+```bash
 pip install -r requirements.txt
+```
+
+---
+
+## Database
+
+```bash
 python manage.py migrate
-python manage.py seed_demo        # demo problems, contest, users
+```
+
+---
+
+## Seed Demo Data
+
+```bash
+python manage.py seed_demo
+```
+
+or create your own administrator
+
+```bash
+python manage.py createsuperuser
+```
+
+---
+
+## Run
+
+```bash
 python manage.py runserver
 ```
 
-Then open http://127.0.0.1:8000 — log in as `admin` / `admin123`
-(**change this password immediately**), or as demo users `alice` / `bob`
-(password `demo1234`).
-
-To start with an empty database instead, skip `seed_demo` and run
-`python manage.py createsuperuser`.
-
-## Deployment
-
-This app runs on any WSGI host. In production:
-
-- set `OJ_DEBUG=0`
-- set a strong `OJ_SECRET_KEY`
-- set `OJ_ALLOWED_HOSTS` to your domain(s)
-- configure your host to import `onlinejudge.wsgi.application`
-- run `python manage.py collectstatic` for static assets
-
-## How judging works
-
-Submissions are judged **synchronously** on submit (a few seconds), through a
-pluggable backend selected with the `OJ_JUDGE_BACKEND` environment variable:
-
-- **`local`** (default) — compiles and runs code on the same machine with
-  gcc / g++ / python3, enforcing CPU-time, memory (address-space) and
-output limits per test.
-  ⚠️ *Not a sandbox*: submitted code runs as your own user. Use it for
-  trusted audiences (your class, your friends, practice groups).
-- **`judge0`** — sends each run to a [Judge0 CE](https://judge0.com) server
-  over HTTP (self-hosted or RapidAPI). Untrusted code never touches your
-  account. Requires outbound internet and a reachable Judge0 instance.
-  Configure with `OJ_JUDGE0_URL` + `OJ_JUDGE0_AUTH_TOKEN` (or
-  `OJ_JUDGE0_RAPIDAPI_KEY`).
-trailing blank lines ignored), so verdicts are consistent if you switch.
-
-## Environment variables
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `OJ_SECRET_KEY` | dev key | Django secret key — set a long random one in production |
-| `OJ_DEBUG` | `1` | Set `0` in production |
-| `OJ_ALLOWED_HOSTS` | `*` | e.g. `yourname.pythonanywhere.com` |
-| `OJ_TIME_ZONE` | `UTC` | e.g. `Asia/Dhaka` |
-| `OJ_JUDGE_BACKEND` | `local` | `local` or `judge0` |
-| `OJ_JUDGE0_URL` | `http://localhost:2358` | Judge0 base URL |
-| `OJ_JUDGE0_AUTH_TOKEN` | — | Judge0 auth token, if configured |
-| `OJ_JUDGE0_RAPIDAPI_KEY` | — | RapidAPI key when using Judge0 on RapidAPI |
-| `OJ_SUBMISSION_COOLDOWN` | `15` | Seconds between submissions per user |
-| `OJ_RUN_COOLDOWN` | `10` | Seconds between "Run" test runs per user |
-
-## Adding problems (admin)
-
-1. `/admin/` → **Problems → Add problem**
-2. Fill code (e.g. `SUM02`), title, statement, limits.
-3. Add **test cases** inline: input, expected output, tick *is sample* for the
-   ones shown on the problem page.
-4. Save — the problem is live immediately (or untick *is visible* to keep it
-   for a contest).
-
-## Writing an editorial (admin)
-
-1. Open the problem in `/admin/` and expand the **Editorial** section.
-2. Write the explanation, optionally paste a reference solution and pick its
-   language. Save.
-3. Users see "📖 Editorial · 🔒 solve to unlock" on the problem page; after an
-   Accepted verdict the full write-up + reference code opens up. While a
-   contest containing the problem is running, the editorial stays hidden for
-   everyone except staff.
-
-## Creating a contest (admin)
-
-1. **Contests → Add contest**: title, slug, start/end time.
-2. Add contest problems inline with labels A, B, C…
-3. Tip: keep contest problems `is_visible = False` so they stay hidden until
-   the contest starts; they are revealed automatically to registered users.
-
-## Project layout
+Open
 
 ```
-onlinejudge/         project settings & urls
-accounts/            registration, profiles
-judge/               problems, contests, submissions, admin
-judge/judging/       judging engine (engine, local runner, judge0 client, suggestions)
-chat/                polling chat
-templates/, static/  UI
+http://127.0.0.1:8000
 ```
 
-## Security notes
+---
 
-- The local backend runs untrusted code with resource limits but **without
-  OS-level isolation** — shared hosting does not allow real sandboxes.
-  Keep the audience trusted, or switch to Judge0.
-- Change the seeded `admin` password immediately (`admin123` is public
-  knowledge — it is in this README).
-- Set `OJ_DEBUG=0` and a real `OJ_SECRET_KEY` in production.
+# 🧑‍💻 Demo Accounts
+
+| User | Password |
+|------|----------|
+| admin | admin123 |
+| alice | demo1234 |
+| bob | demo1234 |
+
+> Change the admin password immediately after deployment.
+
+---
+
+# 🌍 Deployment
+
+Production Checklist
+
+- Set `OJ_DEBUG=0`
+- Generate a secure `OJ_SECRET_KEY`
+- Configure `OJ_ALLOWED_HOSTS`
+- Run
+
+```bash
+python manage.py collectstatic
+```
+
+Deploy on
+
+- PythonAnywhere
+- Render
+- Railway
+- VPS
+- Ubuntu Server
+- DigitalOcean
+
+---
+
+# ⚙ Configuration
+
+| Variable | Default |
+|------------|------------|
+| OJ_SECRET_KEY | Development Key |
+| OJ_DEBUG | 1 |
+| OJ_ALLOWED_HOSTS | * |
+| OJ_TIME_ZONE | UTC |
+| OJ_JUDGE_BACKEND | local |
+| OJ_JUDGE0_URL | localhost |
+| OJ_JUDGE0_AUTH_TOKEN | Optional |
+| OJ_SUBMISSION_COOLDOWN | 15 |
+| OJ_RUN_COOLDOWN | 10 |
+
+---
+
+# 🧠 Judging Backends
+
+## Local
+
+- Fast
+- Offline
+- GCC
+- G++
+- Python
+
+Best for
+
+- Universities
+- Coding clubs
+- Internal competitions
+
+---
+
+## Judge0
+
+Secure remote execution through Judge0 REST API.
+
+Ideal for
+
+- Public deployments
+- Internet-facing platforms
+- Untrusted users
+
+---
+
+# 📂 Project Structure
+
+```
+onlinejudge/
+├── accounts/
+├── chat/
+├── judge/
+│   ├── judging/
+│   ├── models.py
+│   ├── views.py
+│   └── admin.py
+├── templates/
+├── static/
+└── manage.py
+```
+
+---
+
+# 🔒 Security
+
+The Local Judge **does not sandbox code**.
+
+For public deployments, use
+
+- Judge0
+- Docker
+- Firecracker
+- gVisor
+
+Always
+
+- Disable Debug
+- Use HTTPS
+- Use a strong Secret Key
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome.
+
+1. Fork the repository
+
+2. Create a feature branch
+
+3. Commit your changes
+
+4. Push
+
+5. Open a Pull Request
+
+---
+
+# ⭐ Support
+
+If this project helps you,
+
+please consider giving it a ⭐ on GitHub.
+
+It motivates future development.
+
+---
+
+# 📄 License
+
+Released under the **MIT License**.
+
+---
+
+<div align="center">
+
+Built with ❤️ using Django
+
+</div>
