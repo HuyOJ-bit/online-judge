@@ -165,3 +165,28 @@ try:
     from .local_settings import *  # noqa: F401,F403
 except ImportError:
     pass
+
+# --- Render Production Config ---
+import os
+import dj_database_url
+
+DEBUG = False
+ALLOWED_HOSTS = [".onrender.com", "localhost", "127.0.0.1"]
+
+if "whitenoise.middleware.WhiteNoiseMiddleware" not in MIDDLEWARE:
+    try:
+        idx = MIDDLEWARE.index("django.middleware.security.SecurityMiddleware") + 1
+        MIDDLEWARE.insert(idx, "whitenoise.middleware.WhiteNoiseMiddleware")
+    except ValueError:
+        pass
+
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+DATABASES = {
+    "default": dj_database_url.config(
+        default="sqlite:///db.sqlite3",
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}

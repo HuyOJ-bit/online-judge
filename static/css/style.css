@@ -558,3 +558,20 @@ pre.plain {
   .chat-box { height: 64dvh; }
 }
 .chat-box { min-height: 320px; }
+
+/* Tùy chỉnh: Navbar trắng, tông màu chủ đạo vàng */
+:root {
+    --accent: #d97706 !important;
+    --accent-hover: #b45309 !important;
+}
+.topbar, .navbar {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+.topbar a, .navbar a, .topbar .brand, .navbar-brand {
+    color: #1f2937 !important;
+}
+.topbar a:hover, .navbar a:hover {
+    color: #d97706 !important;
+}

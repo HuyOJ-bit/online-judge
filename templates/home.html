@@ -1,103 +1,95 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Home{% endblock %}
 {% block content %}
 <div class="hero">
-  <h1>Online Judge</h1>
-  <p>Solve problems in C, C++ and Python, test your code before submitting, compete in contests, climb the standings.</p>
-  <div class="hero-cta">
-    <a class="btn btn-light" href="{% url 'problem_list' %}">Start solving →</a>
-    <a class="btn btn-ghost" style="background:transparent;color:#fff;border-color:rgba(255,255,255,0.35);" href="{% url 'contest_list' %}">Browse contests</a>
-  </div>
-  <div class="stat-row">
-    <div class="stat"><b>{{ stats.problems }}</b> problems</div>
-    <div class="stat"><b>{{ stats.users }}</b> users</div>
-    <div class="stat"><b>{{ stats.submissions }}</b> submissions</div>
-    <div class="stat"><b>{{ stats.accepted }}</b> accepted</div>
-  </div>
+<h1>Hùng Vương Online Judge</h1>
+<p>Giải quyết các bài tập trong C, C++ và Python, kiểm tra mã của bạn trước khi gửi, cạnh tranh trong các cuộc thi, leo lên bảng xếp hạng.</p>
+<div class="hero-cta">
+<a class="btn btn-light" href="{% url 'problem_list' %}">Bắt đầu giải quyết →</a>
+<a class="btn btn-ghost" href="{% url 'contest_list' %}" style="background:transparent;color:#fff;border-color:rgba(255,255,255,0.35);">Cuộc Thi</a>
+</div>
+<div class="stat-row">
+<div class="stat"><b>{{ stats.problems }}</b> Bài tập</div>
+<div class="stat"><b>{{ stats.users }}</b> Người dùng</div>
+<div class="stat"><b>{{ stats.submissions }}</b> Bài nộp</div>
+<div class="stat"><b>{{ stats.accepted }}</b>Được chấp nhận</div>
+</div>
 </div>
 
 {% if running_contests %}
   {% for contest in running_contests %}
   <div class="card spread">
-    <div>
-      <span class="contest-state state-running">● Live now</span>
-      <h2 style="margin:2px 0 2px;"><a href="{{ contest.get_absolute_url }}">{{ contest.title }}</a></h2>
-      <span class="muted">Ends <span class="countdown" data-end="{{ contest.end_time|date:'U' }}"></span></span>
-    </div>
-    <a class="btn" href="{{ contest.get_absolute_url }}">Enter contest →</a>
-  </div>
+<div>
+<span class="contest-state state-running">● Sống ngay bây giờ</span>
+<h2 style="margin:2px 0 2px;"><a href="{{ contest.get_absolute_url }}">{{ contest.title }}</a></h2>
+<span class="muted">End end <span class="countdown" data-end="{{ contest.end_time|date:'U' }}"></span></span>
+</div>
+<a class="btn" href="{{ contest.get_absolute_url }}">Tham gia cuộc thi →</a>
+</div>
   {% endfor %}
 {% endif %}
 
 <div class="grid-2">
-  <div>
-    <div class="card">
-      <div class="spread">
-        <h2 style="margin-top:0;">Recent problems</h2>
-        <a href="{% url 'problem_list' %}" class="muted">all problems →</a>
-      </div>
-      <div class="table-scroll"><table class="table-plain">
-        <tr><th></th><th>Code</th><th>Title</th><th>Difficulty</th></tr>
-        {% for p in recent_problems %}
-        <tr>
-          <td>{% if p.id in solved_ids %}<span class="tick">✓</span>{% endif %}</td>
-          <td class="mono">{{ p.code }}</td>
-          <td><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></td>
-          <td><span class="diff-{{ p.difficulty }}">{{ p.get_difficulty_display }}</span></td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="4" class="muted">No problems yet — an admin can add some in the admin panel.</td></tr>
+<div>
+<div class="card">
+<div class="spread">
+<h2 style="margin-top:0;">Các bài tập gần đây</h2>
+<a class="muted" href="{% url 'problem_list' %}">Tất cả các bài →</a>
+</div>
+<div class="table-scroll"><table class="table-plain">
+<tr><th></th><th>Mã số</th><th>Tiêu đề</th><th>Cấp độ</th></tr>{% for p in recent_problems %}<tr>
+<td>{% if p.id in solved_ids %}<span class="tick">✓</span>{% endif %}</td>
+<td class="mono">{{ p.code }}</td>
+<td><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></td>
+<td><span class="diff-{{ p.difficulty }}">{{ p.get_difficulty_display }}</span></td>
+</tr>{% empty %}<tr><td class="muted" colspan="4">Chưa có bài tập gì — quản trị viên có thể thêm một số bài tập vào bảng quản trị.</td></tr>
         {% endfor %}
       </table></div>
-    </div>
-
-    <div class="card">
-      <div class="spread">
-        <h2 style="margin-top:0;">Recent submissions</h2>
-        <a href="{% url 'submission_list' %}" class="muted">all submissions →</a>
-      </div>
-      <div class="table-scroll"><table class="table-plain">
-        {% for s in recent_submissions %}
-        <tr>
-          <td><a href="{% url 'profile' s.user.username %}">{{ s.user.username }}</a></td>
-          <td class="mono"><a href="{{ s.problem.get_absolute_url }}">{{ s.problem.code }}</a></td>
-          <td>{{ s.get_language_display }}</td>
-          <td><a href="{{ s.get_absolute_url }}"><span class="badge badge-{{ s.verdict_class }}">{{ s.verdict }}</span></a></td>
-          <td class="muted">{{ s.submitted_at|timesince }} ago</td>
-        </tr>
+</div>
+<div class="card">
+<div class="spread">
+<h2 style="margin-top:0;">Bài viết gần đây</h2>
+<a class="muted" href="{% url 'submission_list' %}">Tất cả các khoản cống hiến →</a>
+</div>
+<div class="table-scroll"><table class="table-plain">{% for s in recent_submissions %}<tr>
+<td><a href="{% url 'profile' s.user.username %}">{{ s.user.username }}</a></td>
+<td class="mono"><a href="{{ s.problem.get_absolute_url }}">{{ s.problem.code }}</a></td>
+<td>{{ s.get_language_display }}</td>
+<td><a href="{{ s.get_absolute_url }}"><span class="badge badge-{{ s.verdict_class }}">{{ s.verdict }}</span></a></td>
+<td class="muted">{{ s.submitted_at|timesince }} trước</td>
+</tr>
         {% empty %}
-        <tr><td class="muted">No submissions yet — be the first!</td></tr>
+        <tr><td class="muted">Chưa có bài gửi nào - hãy là người đầu tiên!</td></tr>
         {% endfor %}
       </table></div>
-    </div>
-  </div>
-
-  <div>
-    <div class="card">
-      <h2 style="margin-top:0;">Upcoming contests</h2>
+</div>
+</div>
+<div>
+<div class="card">
+<h2 style="margin-top:0;">Cuộc trò chuyện sắp tới</h2>
       {% for c in upcoming_contests %}
         <p style="margin:8px 0;">
-          <a href="{{ c.get_absolute_url }}">{{ c.title }}</a><br>
-          <span class="muted">starts {{ c.start_time }}</span><br>
-          <span class="countdown" data-end="{{ c.start_time|date:'U' }}"></span>
-        </p>
+<a href="{{ c.get_absolute_url }}">{{ c.title }}</a><br/>
+<span class="muted">bắt đầu vào {{ c.start_time }}</span><br/>
+<span class="countdown" data-end="{{ c.start_time|date:'U' }}"></span>
+</p>
       {% empty %}
-        <p class="muted">Nothing scheduled. Check back soon!</p>
+        <p class="muted">Không có gì được lên lịch. Kiểm tra lại sớm!</p>
       {% endfor %}
-      <a href="{% url 'contest_list' %}" class="muted">all contests →</a>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0;">Get started</h2>
-      <ol style="padding-left:20px; margin:6px 0;">
-        <li><a href="{% url 'register' %}">Create an account</a></li>
-        <li>Pick a <a href="{% url 'problem_list' %}">problem</a></li>
-        <li>Submit in C, C++ or Python</li>
-        <li>Get an instant verdict + suggestions</li>
-      </ol>
-      <p class="muted">Stuck? Ask in the <a href="{% url 'chat_global' %}">global chat</a>.</p>
-    </div>
-  </div>
+      <a class="muted" href="{% url 'contest_list' %}">Tất cả các cuộc thi →</a>
+</div>
+<div class="card">
+<h2 style="margin-top:0;">Start</h2>
+<ol style="padding-left:20px; margin:6px 0;">
+<li><a href="{% url 'register' %}">Tạo một tài khoản</a></li>
+<li>Chọn một <a href="{% url 'problem_list' %}">bài tập</a></li>
+<li>Nộp lại bài bằng C, C++ hoặc Python</li>
+<li>Nhận Thẩm phán quyết định + xuất bài tập ngay lập tức</li>
+</ol>
+<p class="muted">Macintosh? Hỏi trong<a href="{% url 'chat_global' %}">chuyện trò</a>.</p>
+</div>
+</div>
 </div>
 {% endblock %}
 {% block scripts %}

@@ -1,68 +1,58 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Editorial · {{ problem.code }}{% endblock %}
 {% block content %}
 
 <div class="spread">
-  <h1 style="margin-bottom:2px;">📖 Editorial —
+<h1 style="margin-bottom:2px;">📖 Biên tập —
     <span class="mono muted" style="font-size:0.8em;">{{ problem.code }}</span> {{ problem.title }}
   </h1>
-  <span class="diff-{{ problem.difficulty }}">{{ problem.get_difficulty_display }}</span>
+<span class="diff-{{ problem.difficulty }}">{{ problem.get_difficulty_display }}</span>
 </div>
-<p class="muted"><a href="{{ problem.get_absolute_url }}">← back to the problem</a></p>
+<p class="muted"><a href="{{ problem.get_absolute_url }}">← quay lại bài tập</a></p>
 
 {% if can_view %}
   {% if problem.editorial %}
   <div class="card statement">
-    <div class="statement-block">{{ problem.editorial }}</div>
-  </div>
+<div class="statement-block">{{ problem.editorial }}</div>
+</div>
   {% endif %}
 
   {% if problem.editorial_code %}
   <div class="card">
-    <div class="spread">
-      <h3 style="margin:0;">Reference solution
-        {% if problem.editorial_language %}
+<div class="spread">
+<h3 style="margin:0;">Giải pháp tham khảo
+        {% if problem.editorial_lingu %}
           <span class="badge badge-outline">{{ problem.get_editorial_language_display }}</span>
         {% endif %}
       </h3>
-      <button type="button" class="copy-btn" style="font-size:0.85rem;" data-copy="ref-code">copy code</button>
-    </div>
-    <pre class="codeview" id="ref-code">{{ problem.editorial_code }}</pre>
-  </div>
+<button class="copy-btn" data-copy="ref-code" style="font-size:0.85rem;" type="button">sao chép mã</button>
+</div>
+<pre class="codeview" id="ref-code">{{ problem.editorial_code }}</pre>
+</div>
   {% endif %}
 
-  <p class="muted">Solved it differently? Share your approach in the
-    <a href="{% url 'chat_global' %}">global chat</a>.</p>
+  <p class="muted">Giải thích theo cách khác? Chia sẻ cách tiếp cận của bạn trong<a href="{% url 'chat_global' %}">trò chuyện toàn cầu</a>.</p>
 
 {% else %}
   <div class="card" style="text-align:center; padding:48px 24px;">
-    <div style="font-size:2.4rem; margin-bottom:10px;">🔒</div>
+<div style="font-size:2.4rem; margin-bottom:10px;">🔒</div>
     {% if reason == "live_contest" %}
       <h3 style="margin:0 0 6px;">Hidden during a live contest</h3>
-      <p class="muted" style="margin:0 0 18px;">
-        The editorial is hidden while a contest containing this problem is running.
-        Come back when the contest ends.
-      </p>
-      <a class="btn btn-ghost" href="{{ problem.get_absolute_url }}">Back to the problem</a>
-    {% else %}
-      <h3 style="margin:0 0 6px;">Solve this problem to unlock the editorial</h3>
-      <p class="muted" style="margin:0 0 18px;">
-        Get an <b style="color:var(--ac);">Accepted</b> verdict on
-        <b>{{ problem.code }} · {{ problem.title }}</b> and the full solution
-        write-up{% if problem.editorial_code %} + reference code{% endif %} opens up.
-        No spoilers before that — you've got this. 💪
-      </p>
-      <a class="btn" href="{{ problem.get_absolute_url }}#submit">Try the problem</a>
-      {% if not user.is_authenticated %}
-        <a class="btn btn-ghost" style="margin-left:8px;" href="{% url 'login' %}?next={{ request.path }}">Log in</a>
+<p class="muted" style="margin:0 0 18px;">Bài xã luận bị ẩn trong khi một cuộc thi có vấn đề này đang diễn ra.
+        Hãy quay lại khi cuộc thi kết thúc.</p>
+<a class="btn btn-ghost" href="{{ problem.get_absolute_url }}">Quay lại bài tập</a>{% else %}<h3 style="margin:0 0 6px;">Giải thích bài tập này để mở khóa quyết định bài luận luận</h3>
+<p class="muted" style="margin:0 0 18px;">Nhận một<b style="color:var(--ac);">Accepted</b> phán quyết về
+        <b>{{ problem.code }} · {{ problem.title }}</b>và giải pháp đầy đủ
+        write-up{% if problem.editorial_code %} + mã tham chiếu{% endif %} mở ra.
+        Không có chi tiết nào được tiết lộ trước đó - bạn đã có cái này. 💪</p>
+<a class="btn" href="{{ problem.get_absolute_url }}#submit">Hãy thử bài tập</a>{% if not user.is_authenticated %}<a class="btn btn-ghost" href="{% url 'login' %}?next={{ request.path }}" style="margin-left:8px;">Đăng nhập</a>
       {% endif %}
     {% endif %}
-  </div>
-{% endif %}
+  </div>{% endif %}
 {% endblock %}
 
-{% block scripts %}
-<script>
+{% block scripts %}<script>
 document.querySelectorAll(".copy-btn").forEach(function (b) {
   b.addEventListener("click", function () {
     var txt = document.getElementById(b.dataset.copy).textContent;
@@ -72,5 +62,4 @@ document.querySelectorAll(".copy-btn").forEach(function (b) {
     });
   });
 });
-</script>
-{% endblock %}
+</script>{% endblock %}

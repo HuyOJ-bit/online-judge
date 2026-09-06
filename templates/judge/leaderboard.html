@@ -1,18 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Leaderboard{% endblock %}
-{% block content %}
-<h1>🏆 Leaderboard</h1>
-<p class="muted">Ranked by distinct problems solved — ties go to fewer total submissions.</p>
-
+{% load static %}
+{% block title %}Bảng xếp hạng{% endblock %}
+{% block content %}<h1>🏆 Bảng xếp hạng</h1>
+<p class="muted">Được xếp hạng theo các bài tập riêng biệt đã được giải quyết — các mối quan hệ sẽ dẫn đến tổng số lần gửi ít hơn.</p>
 <div class="card">
-  <div class="table-scroll"><table>
-    <tr>
-      <th style="width:70px;">Rank</th>
-      <th>User</th>
-      <th class="num">Solved</th>
-      <th class="num">Acceptance</th>
-      <th class="num">Submissions</th>
-    </tr>
+<div class="table-scroll"><table>
+<tr>
+<th style="width:70px;">Thứ hạng</th>
+<th>người dùng</th>
+<th class="num">Đã giải quyết</th>
+<th class="num">Chấp nhận</th>
+<th class="num">Bài nộp</th>
+</tr>
     {% for u in page %}
     <tr>
       {% with rank=page.start_index|add:forloop.counter0 %}
@@ -21,23 +20,23 @@
       </td>
       {% endwith %}
       <td>
-        <a href="{% url 'profile' u.username %}"><b>{{ u.username }}</b></a>
-        {% if u.is_staff %}<span class="badge badge-outline">staff</span>{% endif %}
+<a href="{% url 'profile' u.username %}"><b>{{ u.username }}</b></a>
+        {% if u.is_staff %}<span class="badge badge-outline">nhân viên</span>{% endif %}
       </td>
-      <td class="num"><b>{{ u.solved }}</b></td>
-      <td class="num">{% if u.total_subs %}{% widthratio u.ac_subs u.total_subs 100 %}%{% else %}—{% endif %}</td>
-      <td class="num">{{ u.total_subs }}</td>
-    </tr>
+<td class="num"><b>{{ u.solved }}</b></td>
+<td class="num">{% if u.total_subs %}{% widthratio u.ac_subs u.total_subs 100 %}%{% else %}—{% endif %}</td>
+<td class="num">{{ u.total_subs }}</td>
+</tr>
     {% empty %}
-    <tr><td colspan="5" class="muted">No submissions yet — the leaderboard fills up as people solve problems.</td></tr>
+    <tr><td class="muted" colspan="5">Chưa có bài gửi nào — bảng xếp hạng sẽ đầy lên khi mọi người giải quyết bài tập.</td></tr>
     {% endfor %}
   </table></div>
 
   {% if page.paginator.num_pages > 1 %}
   <div class="pagination">
-    {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">‹ prev</a>{% endif %}
+    {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">‹ trước</a>{% endif %}
     <span class="cur">{{ page.number }} / {{ page.paginator.num_pages }}</span>
-    {% if page.has_next %}<a href="?page={{ page.next_page_number }}">next ›</a>{% endif %}
+    {% if page.has_next %}<a href="?page={{ page.next_page_number }}">Kế tiếp &gt;</a>{% endif %}
   </div>
   {% endif %}
 </div>

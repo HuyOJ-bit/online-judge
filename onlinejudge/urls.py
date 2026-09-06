@@ -8,6 +8,6 @@ urlpatterns = [
     path("", include("judge.urls")),
 ]
 
-admin.site.site_header = "Online Judge — Administration"
-admin.site.site_title = "Online Judge Admin"
-admin.site.index_title = "Judge management"
+admin.site.site_header = "Hùng Vương Online Judge - Quản trị"
+admin.site.site_title = "Hùng Vương Online Judge - Quản trị"
+admin.site.index_title = "Quản trị hệ thống"

@@ -1,54 +1,35 @@
 {% extends "base.html" %}
-{% block title %}Submissions{% endblock %}
-{% block content %}
-<h1>Submissions</h1>
-
-<form method="get" class="filter-bar">
+{% load static %}
+{% block title %}Bài phụ{% endblock %}
+{% block content %}<h1>Bài nộp</h1>
+<form class="filter-bar" method="get">
   {% if user.is_authenticated %}
     <label style="display:flex;align-items:center;gap:5px;margin:0;font-weight:500;">
-      <input type="checkbox" name="mine" value="1" style="width:auto;" {% if current.mine %}checked{% endif %}> mine only
-    </label>
-  {% endif %}
-  <input type="text" name="user" placeholder="username" value="{{ current.user }}" style="max-width:140px;">
-  <input type="text" name="problem" placeholder="problem code" value="{{ current.problem }}" style="max-width:140px;">
-  <select name="verdict">
-    <option value="">All verdicts</option>
-    {% for code, name in verdicts %}
-      <option value="{{ code }}" {% if current.verdict == code %}selected{% endif %}>{{ name }}</option>
-    {% endfor %}
-  </select>
-  <button class="btn btn-small" type="submit">Filter</button>
+<input ___jinja6___checked___jinja7___="" name="mine" style="width:auto;" type="checkbox" value="1"/>chỉ của tôi</label>{% endif %}<input name="user" placeholder="username" style="max-width:140px;" type="text" value="{{ current.user }}"/>
+<input name="problem" placeholder="problem code" style="max-width:140px;" type="text" value="{{ current.problem }}"/>
+<select name="verdict">
+<option value="">Tất cả các phán quyết</option>{% for code, name in verdicts %}<option ___jinja13___selected___jinja14___="" value="{{ code }}">{{ name }}</option>{% endfor %}</select>
+<button class="btn btn-small" type="submit">Filter</button>
 </form>
-
 <div class="card">
-  <div class="table-scroll"><table>
-    <tr>
-      <th>#</th><th>When</th><th>Who</th><th>Problem</th><th>Lang</th>
-      <th>Verdict</th><th>Tests</th><th class="num">Time</th>
-    </tr>
-    {% for s in page %}
-    <tr>
-      <td class="mono"><a href="{{ s.get_absolute_url }}">{{ s.pk }}</a></td>
-      <td class="muted">{{ s.submitted_at|date:"M d, H:i" }}</td>
-      <td><a href="{% url 'profile' s.user.username %}">{{ s.user.username }}</a></td>
-      <td class="mono"><a href="{{ s.problem.get_absolute_url }}">{{ s.problem.code }}</a>
-          {% if s.contest %}<span class="badge badge-outline" title="{{ s.contest.title }}">contest</span>{% endif %}</td>
-      <td>{{ s.get_language_display }}</td>
-      <td><a href="{{ s.get_absolute_url }}"><span class="badge badge-{{ s.verdict_class }}">{{ s.get_verdict_display }}</span></a></td>
-      <td>{{ s.passed_tests }}/{{ s.total_tests }}</td>
-      <td class="num">{% if s.exec_time_ms is not None %}{{ s.exec_time_ms }} ms{% else %}—{% endif %}</td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="8" class="muted">No submissions found.</td></tr>
+<div class="table-scroll"><table>
+<tr>
+<th>#</th><th>Khi</th><th>Who</th><th>Bài tập</th><th>Lang</th>
+<th>Kết quả</th><th>Kiểm tra</th><th class="num">Thời gian</th>
+</tr>{% for s in page %}<tr>
+<td class="mono"><a href="{{ s.get_absolute_url }}">{{ s.pk }}</a></td>
+<td class="muted">{{ s.submitted_at|date:"M d, H:i" }}</td>
+<td><a href="{% url 'profile' s.user.username %}">{{ s.user.username }}</a></td>
+<td class="mono"><a href="{{ s.problem.get_absolute_url }}">{{ s.problem.code }}</a>{% if s.contest %}<span class="badge badge-outline" title="{{ s.contest.title }}">cuộc thi</span>{% endif %}</td>
+<td>{{ s.get_language_display }}</td>
+<td><a href="{{ s.get_absolute_url }}"><span class="badge badge-{{ s.verdict_class }}">{{ s.get_verdict_display }}</span></a></td>
+<td>{{ s.passed_tests }}/{{ s.total_tests }}</td>
+<td class="num">{% if s.exec_time_ms is not None %}{{ s.exec_time_ms }} ms{% else %}—{% endif %}</td>
+</tr>{% empty %}<tr><td class="muted" colspan="8">No submissions found.</td></tr>
     {% endfor %}
-  </table></div>
-
-  {% if page.paginator.num_pages > 1 %}
-  <div class="pagination">
-    {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}&mine={{ current.mine }}&user={{ current.user }}&problem={{ current.problem }}&verdict={{ current.verdict }}">‹ prev</a>{% endif %}
+  </table></div>{% if page.paginator.num_pages > 1 %}<div class="pagination">{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}&amp;mine={{ current.mine }}&amp;user={{ current.user }}&amp;problem={{ current.problem }}&amp;verdict={{ current.verdict }}">‹ prev</a>{% endif %}
     <span class="cur">{{ page.number }} / {{ page.paginator.num_pages }}</span>
-    {% if page.has_next %}<a href="?page={{ page.next_page_number }}&mine={{ current.mine }}&user={{ current.user }}&problem={{ current.problem }}&verdict={{ current.verdict }}">next ›</a>{% endif %}
+    {% if page.has_next %}<a href="?page={{ page.next_page_number }}&amp;mine={{ current.mine }}&amp;user={{ current.user }}&amp;problem={{ current.problem }}&amp;verdict={{ current.verdict }}">next ›</a>{% endif %}
   </div>
   {% endif %}
-</div>
-{% endblock %}
+</div>{% endblock %}

@@ -1,42 +1,45 @@
-{% load static %}<!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Online Judge{% endblock %} · Online Judge</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%232563eb'/><text x='50' y='68' font-size='44' text-anchor='middle' fill='white' font-family='monospace' font-weight='bold'>OJ</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link href="https://scontent.fhan14-1.fna.fbcdn.net/v/t39.30808-6/796008445_2943094419362398_3058455394759002724_n.jpg?stp=dst-jpg_tt6&amp;cstp=mx1254x1254&amp;ctp=s1254x1254&amp;_nc_cat=101&amp;ccb=1-7&amp;_nc_sid=6ee11a&amp;_nc_ohc=gbu_M93mUkEQ7kNvwHBLF61&amp;_nc_oc=Adq4PkH2zMsPuExCGaRkMu-kSC6lpL3lOFChrGjr6lkMnsZ6QhqO6P3C6LzViUlq65JQRSA-mZIIrhgAFuMECoqR&amp;_nc_zt=23&amp;_nc_ht=scontent.fhan14-1.fna&amp;_nc_gid=NSBGM3CJO4q1eE-a44p4pw&amp;_nc_ss=7b2a8&amp;oh=00_AQLAOHw3PfXNm4xIO5bz49ur9xpQjpKbuNlXPRdJW5Q3lQ&amp;oe=6AA2D2E6" rel="icon" type="image/jpeg"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>{% block title %}Online Judge{% endblock %} · Hùng Vương Online Judge</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="{% static 'css/style.css' %}" rel="stylesheet"/>
   {% block head %}{% endblock %}
+    <link href="{% static 'css/custom_theme.css' %}" rel="stylesheet"/>
 </head>
 <body>
 <nav class="topbar">
-  <div class="container topbar-inner">
-    <a class="brand" href="{% url 'home' %}"><span class="brand-mark">OJ</span> Online Judge</a>
-    <div class="nav-links">
-      <a href="{% url 'problem_list' %}" class="{% if request.resolver_match.url_name == 'problem_list' %}active{% endif %}">Problems</a>
-      <a href="{% url 'contest_list' %}" class="{% if 'contest' in request.resolver_match.url_name %}active{% endif %}">Contests</a>
-      <a href="{% url 'leaderboard' %}" class="{% if request.resolver_match.url_name == 'leaderboard' %}active{% endif %}">Leaderboard</a>
-      <a href="{% url 'submission_list' %}" class="{% if 'submission' in request.resolver_match.url_name %}active{% endif %}">Submissions</a>
-      <a href="{% url 'chat_global' %}" class="{% if 'chat' in request.resolver_match.url_name %}active{% endif %}">Chat</a>
-    </div>
-    <div class="nav-user">
+<div class="container topbar-inner">
+<a class="brand d-flex align-items-center" href="{% url 'home' %}">
+<img alt="Logo" class="me-2 rounded-circle" height="45" src="https://scontent.fhan14-1.fna.fbcdn.net/v/t39.30808-6/796008445_2943094419362398_3058455394759002724_n.jpg?stp=dst-jpg_tt6&amp;cstp=mx1254x1254&amp;ctp=s1254x1254&amp;_nc_cat=101&amp;ccb=1-7&amp;_nc_sid=6ee11a&amp;_nc_ohc=gbu_M93mUkEQ7kNvwHBLF61&amp;_nc_oc=Adq4PkH2zMsPuExCGaRkMu-kSC6lpL3lOFChrGjr6lkMnsZ6QhqO6P3C6LzViUlq65JQRSA-mZIIrhgAFuMECoqR&amp;_nc_zt=23&amp;_nc_ht=scontent.fhan14-1.fna&amp;_nc_gid=NSBGM3CJO4q1eE-a44p4pw&amp;_nc_ss=7b2a8&amp;oh=00_AQLAOHw3PfXNm4xIO5bz49ur9xpQjpKbuNlXPRdJW5Q3lQ&amp;oe=6AA2D2E6" style="object-fit: contain;" width="45"/>
+<span>Hùng Vương Online Judge</span>
+</a>
+<div class="nav-links">
+<a class="{% if request.resolver_match.url_name == 'problem_list' %}active{% endif %}" href="{% url 'problem_list' %}">Bài tập</a>
+<a class="{% if 'contest' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'contest_list' %}">Cuộc thi</a>
+<a class="{% if request.resolver_match.url_name == 'leaderboard' %}active{% endif %}" href="{% url 'leaderboard' %}">Bảng xếp hạng</a>
+<a class="{% if 'submission' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'submission_list' %}">Bài nộp</a>
+<a class="{% if 'chat' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'chat_global' %}">Trò chuyện</a>
+</div>
+<div class="nav-user">
       {% if user.is_authenticated %}
-        {% if user.is_staff %}<a href="{% url 'admin:index' %}" class="nav-admin">Admin</a>{% endif %}
-        <a href="{% url 'profile' user.username %}" class="nav-username">{{ user.username }}</a>
-        <form method="post" action="{% url 'logout' %}" class="inline-form">{% csrf_token %}
-          <button type="submit" class="linklike">Logout</button>
-        </form>
+        {% if user.is_staff %}<a class="nav-admin" href="{% url 'admin:index' %}">Quản trị viên</a>{% endif %}
+        <a class="nav-username" href="{% url 'profile' user.username %}">{{ user.username }}</a>
+<form action="{% url 'logout' %}" class="inline-form" method="post">{% csrf_token %}
+          <button class="linklike" type="submit">Đăng xuất</button>
+</form>
       {% else %}
-        <a href="{% url 'login' %}">Login</a>
-        <a href="{% url 'register' %}" class="btn btn-small">Register</a>
+        <a href="{% url 'login' %}">Đăng nhập</a>
+<a class="btn btn-small" href="{% url 'register' %}">Đăng ký</a>
       {% endif %}
     </div>
-  </div>
+</div>
 </nav>
-
 <main class="container">
   {% if messages %}
     {% for message in messages %}
@@ -45,13 +48,12 @@
   {% endif %}
   {% block content %}{% endblock %}
 </main>
-
 <footer class="footer">
-  <div class="container">
-    <span class="brand-mark small">OJ</span> Online Judge — a minimal judge for C, C++ &amp; Python ·
-    <a href="{% url 'problem_list' %}">practice</a> ·
-    <a href="{% url 'contest_list' %}">compete</a>
-  </div>
+<div class="container">
+<span class="brand-mark small">Hùng Vương</span> Hùng Vương Online Judge được phát triển bởi Nguyễn Lâm Huy.
+    <a href="{% url 'problem_list' %}">Bài Tập</a> ·
+    <a href="{% url 'contest_list' %}">Cuộc Thi</a>
+</div>
 </footer>
 {% block scripts %}{% endblock %}
 </body>

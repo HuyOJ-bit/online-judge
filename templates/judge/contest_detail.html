@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}{{ contest.title }}{% endblock %}
 {% block content %}
 
 <div class="spread">
-  <h1 style="margin-bottom:2px;">{{ contest.title }}</h1>
-  <span class="contest-state state-{{ contest.status }}">{{ contest.status }}</span>
+<h1 style="margin-bottom:2px;">{{ contest.title }}</h1>
+<span class="contest-state state-{{ contest.status }}">{{ contest.status }}</span>
 </div>
 <p class="muted">
   {{ contest.start_time }} → {{ contest.end_time }}
@@ -18,61 +19,50 @@
 {% endif %}
 
 <div class="card spread">
-  <div>
+<div>
     {% if registered %}
-      <b class="tick">✓ You are registered.</b>
+      <b class="tick">✓ Bạn đã đăng ký.</b>
       {% if contest.status == 'running' %} Good luck — the clock is ticking!{% endif %}
     {% elif contest.status == 'finished' %}
-      <span class="muted">This contest has finished — problems are open for practice.</span>
+      <span class="muted">Cuộc thi này đã kết thúc - các bài toán đang được mở để thực hành.</span>
     {% else %}
-      <b>Register to participate</b> — it takes one click.
+      <b>Đăng ký để tham gia</b> - chỉ cần một cú nhấp chuột.
     {% endif %}
   </div>
-  <div style="display:flex; gap:10px;">
+<div style="display:flex; gap:10px;">
     {% if not registered and contest.status != 'finished' %}
       {% if user.is_authenticated %}
-      <form method="post" action="{% url 'contest_register' contest.slug %}">{% csrf_token %}
-        <button class="btn" type="submit">Register</button>
-      </form>
+      <form action="{% url 'contest_register' contest.slug %}" method="post">{% csrf_token %}
+        <button class="btn" type="submit">Đăng ký</button>
+</form>
       {% else %}
-      <a class="btn" href="{% url 'login' %}?next={{ request.path }}">Log in to register</a>
-      {% endif %}
-    {% endif %}
-    <a class="btn btn-ghost" href="{% url 'contest_standings' contest.slug %}">Standings</a>
+      <a class="btn" href="{% url 'login' %}?next={{ request.path }}">Đăng nhập để đăng ký</a>{% endif %}
+    {% endif %}<a class="btn btn-ghost" href="{% url 'contest_standings' contest.slug %}">Xếp hạng bảng</a>
     {% if user.is_authenticated %}
-    <a class="btn btn-ghost" href="{% url 'chat_contest' contest.slug %}">Contest chat</a>
-    {% endif %}
-  </div>
+    <a class="btn btn-ghost" href="{% url 'chat_contest' contest.slug %}">Kỳ thi chat</a>{% endif %}</div>
 </div>
-
-<h2>Problems</h2>
+<h2>Bài tập</h2>
 {% if show_problems %}
 <div class="card">
-  <div class="table-scroll"><table>
-    <tr><th></th><th>#</th><th>Problem</th><th>Difficulty</th><th class="num">Points</th></tr>
+<div class="table-scroll"><table>
+<tr><th></th><th>#</th><th>Bài tập</th><th>Cấp độ</th><th class="num">Điểm</th></tr>
     {% for cp in contest_problems %}
     <tr>
-      <td>
-        {% if cp.problem_id in solved_ids %}<span class="tick" title="Solved">✓</span>
-        {% elif cp.problem_id in attempted_ids %}<span class="test-bad" title="Attempted">✗</span>{% endif %}
-      </td>
-      <td><b>{{ cp.label }}</b></td>
-      <td><a href="{{ cp.problem.get_absolute_url }}?contest={{ contest.slug }}">{{ cp.problem.title }}</a></td>
-      <td><span class="diff-{{ cp.problem.difficulty }}">{{ cp.problem.get_difficulty_display }}</span></td>
-      <td class="num">{{ cp.points }}</td>
-    </tr>
-    {% empty %}<tr><td colspan="5" class="muted">No problems added yet.</td></tr>{% endfor %}
+<td>
+        {% if cp.problem_id in solved_ids %}<span class="tick" title="Solved">✓</span>{% elif cp.problem_id in attempted_ids %}<span class="test-bad" title="Attempted">✗</span>{% endif %}</td>
+<td><b>{{ cp.label }}</b></td>
+<td><a href="{{ cp.problem.get_absolute_url }}?contest={{ contest.slug }}">{{ cp.problem.title }}</a></td>
+<td><span class="diff-{{ cp.problem.difficulty }}">{{ cp.problem.get_difficulty_display }}</span></td>
+<td class="num">{{ cp.points }}</td>
+</tr>
+    {% empty %}<tr><td class="muted" colspan="5">Chưa có bài tập nào được thêm vào.</td></tr>{% endfor %}
   </table></div>
-</div>
-{% elif contest.status == 'upcoming' %}
-<p class="muted">Problems will be revealed when the contest starts.</p>
+</div>{% elif contest.status == 'upcoming' %}<p class="muted">Bài tập sẽ được bật mí khi cuộc thi bắt đầu.</p>
 {% else %}
-<p class="muted">Register to see the problems while the contest is running.</p>
-{% endif %}
+<p class="muted">Đăng ký để xem các bài tập trong khi cuộc thi đang diễn ra.</p>{% endif %}
 {% endblock %}
 
-{% block scripts %}
-<script>
+{% block scripts %}<script>
 document.querySelectorAll('.countdown').forEach(function (el) {
   var end = parseInt(el.dataset.end, 10) * 1000;
   function tick() {
@@ -87,5 +77,4 @@ document.querySelectorAll('.countdown').forEach(function (el) {
   }
   tick();
 });
-</script>
-{% endblock %}
+</script>{% endblock %}

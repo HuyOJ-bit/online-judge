@@ -1,0 +1,110 @@
+
+:root {
+    --bs-primary: #d97706 !important;
+    --bs-primary-rgb: 217, 119, 6 !important;
+    --bs-danger: #d97706 !important;
+    --bs-info: #d97706 !important;
+}
+body {
+    background-color: #fffbeb !important;
+}
+.navbar {
+    background-color: #0f172a !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    border-bottom: 2px solid #d97706;
+}
+.navbar-brand {
+    font-weight: 700;
+    color: #d97706 !important;
+}
+.bg-primary, .btn-primary, .bg-danger, .btn-danger, .bg-info, .btn-info {
+    background-color: #d97706 !important;
+    border-color: #d97706 !important;
+    color: #ffffff !important;
+}
+.btn-primary:hover, .btn-danger:hover, .btn-info:hover {
+    background-color: #b45309 !important;
+    border-color: #b45309 !important;
+}
+.text-primary, .text-danger, .text-info {
+    color: #d97706 !important;
+}
+.card {
+    border: 1px solid #fef3c7 !important;
+    box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.1);
+}
+
+/* Đảm bảo hiển thị logo trong navbar */
+.brand img, .navbar-brand img {
+    display: inline-block !important;
+    width: 32px !important;
+    height: 32px !important;
+    object-fit: contain !important;
+    vertical-align: middle;
+}
+
+/* Tùy chỉnh: Navbar trắng, tông màu chủ đạo vàng */
+:root {
+    --accent: #d97706 !important;
+    --accent-hover: #b45309 !important;
+}
+.topbar, .navbar {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+.topbar a, .navbar a, .topbar .brand, .navbar-brand {
+    color: #1f2937 !important;
+}
+.topbar a:hover, .navbar a:hover {
+    color: #d97706 !important;
+}
+
+/* Đổi banner hero thành vàng đậm / gold */
+.hero, .hero-banner, .card.hero {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #92400e !important;
+}
+.hero p, .hero h1, .hero .stat b {
+    color: #ffffff !important;
+}
+.hero .stat {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+}
+.hero .btn, .hero a.btn {
+    background-color: #ffffff !important;
+    color: #92400e !important;
+    border-color: #ffffff !important;
+}
+.hero .btn:hover, .hero a.btn:hover {
+    background-color: #fef3c7 !important;
+    color: #78350f !important;
+}
+
+/* Giữ chữ trên navbar luôn nằm trên 1 dòng */
+.navbar-nav .nav-link, .navbar .nav-item, .navbar a {
+    white-space: nowrap !important;
+}
+.navbar-nav {
+    flex-wrap: nowrap !important;
+}
+
+/* Ép navbar thẳng hàng 1 dòng, thu nhỏ khoảng cách */
+.topbar-inner, .navbar .container {
+    gap: 12px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+.nav-links {
+    gap: 2px !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+}
+.nav-links a, .topbar a {
+    white-space: nowrap !important;
+    font-size: 0.9rem !important;
+    padding: 4px 8px !important;
+}

@@ -1,39 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Problems{% endblock %}
+{% load static %}
+{% block title %}Bài tập{% endblock %}
 {% block content %}
-<h1>Problems</h1>
-
-<form method="get" class="filter-bar">
-  <input type="text" name="q" placeholder="Search title, code or tag…" value="{{ query }}">
-  <select name="difficulty">
-    <option value="">All difficulties</option>
-    <option value="E" {% if difficulty == 'E' %}selected{% endif %}>Easy</option>
-    <option value="M" {% if difficulty == 'M' %}selected{% endif %}>Medium</option>
-    <option value="H" {% if difficulty == 'H' %}selected{% endif %}>Hard</option>
-  </select>
-  <button class="btn btn-small" type="submit">Filter</button>
-  {% if query or difficulty %}<a href="{% url 'problem_list' %}" class="muted">clear</a>{% endif %}
-</form>
-
+<h1>Bài tập</h1>
+<form class="filter-bar" method="get">
+<input name="q" placeholder="Search title, code or tag…" type="text" value="{{ query }}"/>
+<select name="cấp độ">
+<option value="">All difficulties</option>
+<option ___jinja6___selected___jinja7___="" value="E">Dễ</option>
+<option ___jinja8___selected___jinja9___="" value="M">Medium</option>
+<option ___jinja10___selected___jinja11___="" value="H">Cứng</option>
+</select>
+<button class="btn btn-small" type="submit">Filter</button>
+  {% if query or difficulty %}<a class="muted" href="{% url 'problem_list' %}">thông thoáng</a>{% endif %}</form>
 <div class="card">
-  <div class="table-scroll"><table>
-    <tr>
-      <th style="width:34px;"></th>
-      <th>Code</th><th>Title</th><th>Tags</th><th>Difficulty</th>
-      <th class="num">Solved by</th>
-    </tr>
+<div class="table-scroll"><table>
+<tr>
+<th style="width:34px;"></th>
+<th>Mã số</th><th>Tiêu đề</th><th>Thẻ</th><th>Cấp độ</th>
+<th class="num">Giải quyết bởi</th>
+</tr>
     {% for p in problems %}
     <tr>
-      <td>{% if p.id in solved_ids %}<span class="tick" title="Solved">✓</span>{% endif %}</td>
-      <td class="mono">{{ p.code }}</td>
-      <td><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></td>
-      <td>{% for t in p.tag_list %}<span class="tag">{{ t }}</span>{% endfor %}</td>
-      <td><span class="diff-{{ p.difficulty }}">{{ p.get_difficulty_display }}</span></td>
-      <td class="num">{{ p.solver_count }}</td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="6" class="muted">No problems match.</td></tr>
-    {% endfor %}
-  </table></div>
-</div>
-{% endblock %}
+<td>{% if p.id in solved_ids %}<span class="tick" title="Solved">✓</span>{% endif %}</td>
+<td class="mono">{{ p.code }}</td>
+<td><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></td>
+<td>{% for t in p.tag_list %}<span class="tag">{{ t }}</span>{% endfor %}</td>
+<td><span class="diff-{{ p.difficulty }}">{{ p.get_difficulty_display }}</span></td>
+<td class="num">{{ p.solver_count }}</td>
+</tr>{% empty %}<tr><td class="muted" colspan="6">Không có vấn đề phù hợp.</td></tr>{% endfor %}</table></div>
+</div>{% endblock %}

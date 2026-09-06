@@ -1,44 +1,40 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Standings · {{ contest.title }}{% endblock %}
 {% block content %}
-<h1>Standings — {{ contest.title }}</h1>
+<h1>Bảng xếp hạng — {{ cuộc thi.title }}</h1>
 <p class="muted">
-  <a href="{{ contest.get_absolute_url }}">← back to contest</a>
-  · ICPC style: rank by problems solved, then total penalty
-  ({{ contest.penalty_minutes }} min per wrong try).
+<a href="{{ contest.get_absolute_url }}">← quay lại cuộc thi</a>
+  · Phong cách ICPC: xếp hạng theo bài tập được giải quyết, sau đó là tổng số tiền phạt
+  ({{ cuộc thi.penalty_phút }} phút cho mỗi lần thử sai).
 </p>
-
 <div class="card standings">
-  <div class="table-scroll"><table>
-    <tr>
-      <th>#</th><th>Participant</th><th class="num">Solved</th><th class="num">Penalty</th>
+<div class="table-scroll"><table>
+<tr>
+<th>#</th><th>Người tham gia</th><th class="num">Đã giải quyết</th><th class="num">Hình phạt</th>
       {% for cp in contest_problems %}
-        <th style="text-align:center;" title="{{ cp.problem.title }}">{{ cp.label }}</th>
-      {% endfor %}
-    </tr>
+        <th style="text-align:center;" title="{{ cp.problem.title }}">{{ cp.label }}</th>{% endfor %}</tr>
     {% for row in rows %}
     <tr>
-      <td class="{% if row.rank == 1 %}rank-1{% elif row.rank == 2 %}rank-2{% elif row.rank == 3 %}rank-3{% endif %}">{% if row.rank == 1 %}🥇{% elif row.rank == 2 %}🥈{% elif row.rank == 3 %}🥉{% else %}{{ row.rank }}{% endif %}</td>
-      <td><a href="{% url 'profile' row.user.username %}">{{ row.user.username }}</a></td>
-      <td class="num"><b>{{ row.solved }}</b></td>
-      <td class="num">{{ row.penalty }}</td>
+<td class="{% if row.rank == 1 %}rank-1{% elif row.rank == 2 %}rank-2{% elif row.rank == 3 %}rank-3{% endif %}">{% if row.rank == 1 %}🥇{% elif row.rank == 2 %}🥈{% elif row.rank == 3 %}🥉{% else %}{{ row.rank }}{% endif %}</td>
+<td><a href="{% url 'profile' row.user.username %}">{{ row.user.username }}</a></td>
+<td class="num"><b>{{ row.solved }}</b></td>
+<td class="num">{{ row.penalty }}</td>
       {% for cell in row.cells %}
         {% if cell.state == 'ac' %}
-          <td class="cell-ac">+{% if cell.tries > 1 %}{{ cell.tries|add:"-1" }}{% endif %}<br><small>{{ cell.minute }}m</small></td>
-        {% elif cell.state == 'tried' %}
-          <td class="cell-tried">−{{ cell.tries }}</td>
+          <td class="cell-ac">+{% if cell.tries > 1 %}__JINJA31___{% endif %}<br/><small>{{ cell.minute }}m</small></td>{% elif cell.state == 'tried' %}<td class="cell-tried">−{{ cell.tries }}</td>
         {% else %}
           <td class="cell-none">·</td>
         {% endif %}
       {% endfor %}
     </tr>
     {% empty %}
-    <tr><td colspan="{{ contest_problems|length|add:'4' }}" class="muted">No participants yet.</td></tr>
+    <tr><td class="muted" colspan="{{ contest_problems|length|add:'4' }}">Chưa có người tham gia.</td></tr>
     {% endfor %}
   </table></div>
 </div>
 
 {% if contest.is_running %}
-<p class="muted">Standings update on refresh while the contest runs.</p>
+<p class="muted">Bảng xếp hạng cập nhật khi làm mới trong khi cuộc thi diễn ra.</p>
 {% endif %}
 {% endblock %}

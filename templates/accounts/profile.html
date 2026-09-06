@@ -1,58 +1,53 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}{{ person.username }}{% endblock %}
 {% block content %}
 <h1>{{ person.username }}
-  {% if person.is_staff %}<span class="badge badge-outline">staff</span>{% endif %}
+  {% if person.is_staff %}<span class="badge badge-outline">nhân viên</span>{% endif %}
 </h1>
-<p class="muted">
-  {% if person.profile.full_name %}{{ person.profile.full_name }} · {% endif %}
+<p class="muted">{% if person.profile.full_name %}{{ person.profile.full_name }} · {% endif %}
   {% if person.profile.institution %}{{ person.profile.institution }} · {% endif %}
-  joined {{ person.date_joined|date:"M Y" }}
-</p>
+  đã tham gia {{ person.date_joined|date:"M Y" }}</p>
 {% if person.profile.bio %}<p>{{ person.profile.bio }}</p>{% endif %}
 
 <div class="grid-2">
-  <div>
-    <div class="card">
-      <h2 style="margin-top:0;">Solved problems ({{ solved_problems|length }})</h2>
+<div>
+<div class="card">
+<h2 style="margin-top:0;">Sự cố đã được giải quyết ({{solde_problems|length }})</h2>
       {% if solved_problems %}
         <p>
         {% for p in solved_problems %}
-          <a class="tag" style="display:inline-block;margin-bottom:6px;" href="{% url 'problem_detail' p.problem__code %}">{{ p.problem__code }}</a>
+          <a class="tag" href="{% url 'problem_detail' p.problem__code %}" style="display:inline-block;margin-bottom:6px;">{{ p.problem__code }}</a>
         {% endfor %}
         </p>
       {% else %}
-        <p class="muted">Nothing solved yet — <a href="{% url 'problem_list' %}">pick a first problem</a>!</p>
+        <p class="muted">Chưa giải quyết được điều gì - <a href="{% url 'problem_list' %}">chọn một bài tập đầu tiên</a>!</p>
       {% endif %}
     </div>
-
-    <div class="card">
-      <h2 style="margin-top:0;">Recent submissions</h2>
-      <div class="table-scroll"><table class="table-plain">
+<div class="card">
+<h2 style="margin-top:0;">Bài nộp gần đây</h2>
+<div class="table-scroll"><table class="table-plain">
         {% for s in recent %}
         <tr>
-          <td class="mono"><a href="{{ s.get_absolute_url }}">#{{ s.pk }}</a></td>
-          <td class="mono">{{ s.problem.code }}</td>
-          <td>{{ s.get_language_display }}</td>
-          <td><span class="badge badge-{{ s.verdict_class }}">{{ s.verdict }}</span></td>
-          <td class="muted">{{ s.submitted_at|timesince }} ago</td>
-        </tr>
-        {% empty %}<tr><td class="muted">No submissions yet.</td></tr>{% endfor %}
+<td class="mono"><a href="{{ s.get_absolute_url }}">#{{ s.pk }}</a></td>
+<td class="mono">{{ s.problem.code }}</td>
+<td>{{ s.get_language_display }}</td>
+<td><span class="badge badge-{{ s.verdict_class }}">{{ s.verdict }}</span></td>
+<td class="muted">{{ s.submitted_at|timesince }} ago</td>
+</tr>
+        {% empty %}<tr><td class="muted">Chưa có bài nộp nào.</td></tr>{% endfor %}
       </table></div>
-      <p style="margin-bottom:0;"><a class="muted" href="{% url 'submission_list' %}?user={{ person.username }}">all submissions by {{ person.username }} →</a></p>
-    </div>
-  </div>
-
-  <div>
-    <div class="card">
-      <h2 style="margin-top:0;">Stats</h2>
-      <div class="table-scroll"><table class="table-plain">
-        <tr><td>Total submissions</td><td class="num"><b>{{ total_submissions }}</b></td></tr>
+<p style="margin-bottom:0;"><a class="muted" href="{% url 'submission_list' %}?user={{ person.username }}">Tất cả bài gửi của {{ user.username }} →</a></p>
+</div>
+</div>
+<div>
+<div class="card">
+<h2 style="margin-top:0;">Thống kê</h2>
+<div class="table-scroll"><table class="table-plain">
+<tr><td>Tổng số bài nộp</td><td class="num"><b>{{ total_submissions }}</b></td></tr>
         {% for v in verdict_stats %}
-        <tr><td><span class="badge badge-outline">{{ v.verdict }}</span></td><td class="num">{{ v.n }}</td></tr>
-        {% endfor %}
-      </table></div>
-    </div>
-  </div>
+        <tr><td><span class="badge badge-outline">{{ v.verdict }}</span></td><td class="num">{{ v.n }}</td></tr>{% endfor %}</table></div>
+</div>
+</div>
 </div>
 {% endblock %}
