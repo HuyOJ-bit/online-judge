@@ -1,15 +1,13 @@
 from django.contrib import admin
-from .models import Problem, Submission
+from .models import ChatMessage
 
-@admin.register(Problem)
-class ProblemAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "time_limit", "memory_limit")
-    search_fields = ("title",)
-    list_filter = ("time_limit",)
-
-@admin.register(Submission)
-class SubmissionAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "problem", "status", "created_at")
-    list_filter = ("status", "created_at")
-    search_fields = ("user__username", "problem__title")
+@admin.register(ChatMessage)
+class ChatMessageAdmin(admin.ModelAdmin):
+    list_display = ("user", "room", "short_content", "created_at")
+    list_filter = ("room",)
+    search_fields = ("user__username", "content")
     date_hierarchy = "created_at"
+
+    @admin.display(description="Message")
+    def short_content(self, obj):
+        return obj.content[:60]
