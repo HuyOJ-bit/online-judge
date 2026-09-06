@@ -170,7 +170,7 @@ except ImportError:
 import os
 import dj_database_url
 
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = [".onrender.com", "localhost", "127.0.0.1"]
 
 if "whitenoise.middleware.WhiteNoiseMiddleware" not in MIDDLEWARE:
