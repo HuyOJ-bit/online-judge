@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Đăng ký__JINJA3___
-{% block content %}<h1>Tạo tài khoản của bạn</h1>
+{% block title %}Đăng ký{% endblock %}
+{% block content %}
+<h1>Tạo tài khoản của bạn</h1>
 <div class="card form-narrow">
 <form method="post">{% csrf_token %}
-    {{ form.as_p }}<p style="margin-top:14px;"><button class="btn" type="submit">Đăng ký</button></p>
+    {{ form.as_p }}
+    <p style="margin-top:14px;"><button class="btn" type="submit">Đăng ký</button></p>
 </form>
 <p class="muted">Đã đăng ký chưa? <a href="{% url 'login' %}">Đăng nhập</a>.</p>
-</div>{% endblock %}
+</div>
+{% endblock %}
