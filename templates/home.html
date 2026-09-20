@@ -4,9 +4,9 @@
 {% block content %}
 <div class="hero">
 <h1>Hùng Vương Online Judge</h1>
-<p>Giải quyết các bài tập trong C, C++ và Python, kiểm tra mã của bạn trước khi gửi, cạnh tranh trong các cuộc thi, leo lên bảng xếp hạng.</p>
+<p>Giải quyết các bài tập trong C, C++ và Python, kiểm tra code của bạn trước khi gửi, cạnh tranh trong các cuộc thi, leo lên bảng xếp hạng.</p>
 <div class="hero-cta">
-<a class="btn btn-light" href="{% url 'problem_list' %}">Bắt đầu giải quyết →</a>
+<a class="btn btn-light" href="{% url 'problem_list' %}">Bắt đầu luyện tập →</a>
 <a class="btn btn-ghost" href="{% url 'contest_list' %}" style="background:transparent;color:#fff;border-color:rgba(255,255,255,0.35);">Cuộc Thi</a>
 </div>
 <div class="stat-row">
@@ -35,7 +35,7 @@
 <div class="card">
 <div class="spread">
 <h2 style="margin-top:0;">Các bài tập gần đây</h2>
-<a class="muted" href="{% url 'problem_list' %}">Tất cả các bài →</a>
+<a class="muted" href="{% url 'problem_list' %}">Tất cả các bài tập →</a>
 </div>
 <div class="table-scroll"><table class="table-plain">
 <tr><th></th><th>Mã số</th><th>Tiêu đề</th><th>Cấp độ</th></tr>{% for p in recent_problems %}<tr>
@@ -50,7 +50,7 @@
 <div class="card">
 <div class="spread">
 <h2 style="margin-top:0;">Bài viết gần đây</h2>
-<a class="muted" href="{% url 'submission_list' %}">Tất cả các khoản cống hiến →</a>
+<a class="muted" href="{% url 'submission_list' %}">Tất cả các bài nộp →</a>
 </div>
 <div class="table-scroll"><table class="table-plain">{% for s in recent_submissions %}<tr>
 <td><a href="{% url 'profile' s.user.username %}">{{ s.user.username }}</a></td>
@@ -67,7 +67,7 @@
 </div>
 <div>
 <div class="card">
-<h2 style="margin-top:0;">Cuộc trò chuyện sắp tới</h2>
+<h2 style="margin-top:0;">Cuộc thi sắp tới</h2>
       {% for c in upcoming_contests %}
         <p style="margin:8px 0;">
 <a href="{{ c.get_absolute_url }}">{{ c.title }}</a><br/>
@@ -87,7 +87,7 @@
 <li>Nộp lại bài bằng C, C++ hoặc Python</li>
 <li>Nhận Thẩm phán quyết định + xuất bài tập ngay lập tức</li>
 </ol>
-<p class="muted">Macintosh? Hỏi trong<a href="{% url 'chat_global' %}">chuyện trò</a>.</p>
+<p class="muted">Mắc kẹt ? Hỏi trong<a href="{% url 'chat_global' %}"> chuyện trò</a>.</p>
 </div>
 </div>
 </div>
