@@ -98,8 +98,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # ---------------------------------------------------------------------------
 # I18N / TZ
 # ---------------------------------------------------------------------------
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = os.environ.get("OJ_TIME_ZONE", "UTC")  # e.g. "Asia/Dhaka"
+LANGUAGE_CODE = "vi-vn"
+TIME_ZONE = "Asia/Ho_Chi_Minh"
 USE_I18N = True
 USE_TZ = True
 
