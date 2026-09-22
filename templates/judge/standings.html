@@ -2,11 +2,11 @@
 {% load static %}
 {% block title %}Standings · {{ contest.title }}{% endblock %}
 {% block content %}
-<h1>Bảng xếp hạng — {{ cuộc thi.title }}</h1>
+<h1>Bảng xếp hạng — {{ cuộcthi.title }}</h1>
 <p class="muted">
-<a href="{{ contest.get_absolute_url }}">← quay lại cuộc thi</a>
+<a href="{{ contest.get_absolute_url }}">← Quay lại cuộc thi</a>
   · Phong cách ICPC: xếp hạng theo bài tập được giải quyết, sau đó là tổng số tiền phạt
-  ({{ cuộc thi.penalty_phút }} phút cho mỗi lần thử sai).
+  ({{ cuộcthi.penalty_phút }} phút cho mỗi lần thử sai).
 </p>
 <div class="card standings">
 <div class="table-scroll"><table>
