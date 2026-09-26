@@ -127,3 +127,8 @@ class ParticipationAdmin(admin.ModelAdmin):
     list_display = ("user", "contest", "registered_at")
     list_filter = ("contest",)
     search_fields = ("user__username",)
+@admin.register(Group)
+class GroupAdmin(admin.ModelAdmin):
+    list_display = ('name', 'admin', 'created_at')
+    prepopulated_fields = {'slug': ('name',)}
+    filter_horizontal = ('members',)
