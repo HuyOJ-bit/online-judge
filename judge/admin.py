@@ -133,3 +133,9 @@ class GroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'admin', 'created_at')
     prepopulated_fields = {'slug': ('name',)}
     filter_horizontal = ('members',)
+@admin.register(Contest)
+class ContestAdmin(admin.ModelAdmin):
+    list_display = ('title', 'start_time', 'end_time', 'group', 'created_by')
+    list_filter = ('group', 'start_time')
+    prepopulated_fields = {'slug': ('title',)}
+    filter_horizontal = ('problems',)
