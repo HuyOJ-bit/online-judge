@@ -1,7 +1,23 @@
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+
+
+class Group(models.Model):
+    name = models.CharField(max_length=200, verbose_name="Tên nhóm")
+    slug = models.SlugField(unique=True, max_length=200)
+    description = models.TextField(blank=True, verbose_name="Mô tả")
+    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name="managed_groups", verbose_name="Quản trị viên")
+    members = models.ManyToManyField(User, related_name="joined_groups", blank=True, verbose_name="Thành viên")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("group_detail", args=[self.slug])
 
 
 class Problem(models.Model):
@@ -103,17 +119,16 @@ class TestCase(models.Model):
 
 
 class Contest(models.Model):
-    title = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=60, unique=True)
-    description = models.TextField(blank=True)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    is_visible = models.BooleanField(default=True)
+    title = models.CharField(max_length=200, verbose_name="Tên cuộc thi")
+    slug = models.SlugField(unique=True, max_length=200)
+    description = models.TextField(blank=True, verbose_name="Mô tả")
+    start_time = models.DateTimeField(verbose_name="Thời gian bắt đầu")
+    end_time = models.DateTimeField(verbose_name="Thời gian kết thúc")
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="contests", verbose_name="Thuộc nhóm")
+    problems = models.ManyToManyField(Problem, blank=True, related_name="contests", verbose_name="Bài tập trong cuộc thi")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Người tạo")
     penalty_minutes = models.PositiveIntegerField(
         default=20, help_text="Penalty minutes added per wrong try before the AC."
-    )
-    problems = models.ManyToManyField(
-        Problem, through="ContestProblem", related_name="contests"
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -143,22 +158,6 @@ class Contest(models.Model):
         if not user.is_authenticated:
             return False
         return self.participations.filter(user=user).exists()
-
-
-class ContestProblem(models.Model):
-    contest = models.ForeignKey(
-        Contest, on_delete=models.CASCADE, related_name="contest_problems"
-    )
-    problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
-    label = models.CharField(max_length=4, help_text="A, B, C …")
-    points = models.PositiveIntegerField(default=100)
-
-    class Meta:
-        ordering = ["label"]
-        unique_together = [("contest", "problem"), ("contest", "label")]
-
-    def __str__(self):
-        return f"{self.contest.slug} · {self.label} · {self.problem.code}"
 
 
 class Participation(models.Model):
@@ -229,7 +228,6 @@ class Submission(models.Model):
 
     @property
     def verdict_class(self):
-        """CSS class suffix for the verdict badge."""
         return {
             "AC": "ac",
             "WA": "wa",
@@ -241,41 +239,3 @@ class Submission(models.Model):
             "PD": "pd",
             "JG": "pd",
         }.get(self.verdict, "pd")
-from django.db import models
-from django.contrib.auth.models import User
-
-class Group(models.Model):
-    name = models.CharField(max_length=200, verbose_name="Tên nhóm")
-    slug = models.SlugField(unique=True, max_length=200)
-    description = models.TextField(blank=True, verbose_name="Mô tả")
-    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name="managed_groups", verbose_name="Quản trị viên")
-    members = models.ManyToManyField(User, related_name="joined_groups", blank=True, verbose_name="Thành viên")
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="contests", verbose_name="Thuộc nhóm")
-class Contest(models.Model):
-    title = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)
-    description = models.TextField(blank=True)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="contests")
-    problems = models.ManyToManyField(Problem, blank=True, related_name="contests", verbose_name="Bài tập trong cuộc thi")
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    
-    def __str__(self):
-        return self.title
-class Contest(models.Model):
-    title = models.CharField(max_length=200, verbose_name="Tên cuộc thi")
-    slug = models.SlugField(unique=True, max_length=200)
-    description = models.TextField(blank=True, verbose_name="Mô tả")
-    start_time = models.DateTimeField(verbose_name="Thời gian bắt đầu")
-    end_time = models.DateTimeField(verbose_name="Thời gian kết thúc")
-    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="contests", verbose_name="Thuộc nhóm")
-    problems = models.ManyToManyField(Problem, blank=True, related_name="contests", verbose_name="Bài tập trong cuộc thi")
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Người tạo")
-
-    def __str__(self):
-        return self.title
