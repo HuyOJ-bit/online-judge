@@ -451,3 +451,26 @@ def group_detail(request, slug):
 
 def group_create(request):
     return render(request, "group_create.html")
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Group
+
+def group_list(request):
+    groups = Group.objects.all().order_by('-created_at')
+    return render(request, "group_list.html", {"groups": groups})
+
+def group_detail(request, slug):
+    group = get_object_or_404(Group, slug=slug)
+    is_member = request.user in group.members.all() if request.user.is_authenticated else False
+    return render(request, "group_detail.html", {"group": group, "is_member": is_member})
+
+@login_required
+def group_join(request, slug):
+    group = get_object_or_404(Group, slug=slug)
+    if request.user == group.admin:
+        messages.warning(request, "Bạn là admin của nhóm này rồi!")
+    else:
+        group.members.add(request.user)
+        messages.success(request, f"Đã tham gia nhóm {group.name} thành công!")
+    return redirect('group_detail', slug=group.slug)
