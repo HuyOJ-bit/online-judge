@@ -72,7 +72,6 @@ def home(request):
     now = timezone.now()
     running = Contest.objects.filter(start_time__lte=now, end_time__gte=now)
     upcoming = Contest.objects.filter(start_time__gt=now).order_by("start_time")[:3]
-    upcoming = Contest.objects.filter(is_visible=True, start_time__gt=now).order_by("start_time")[:3]
     recent_problems = Problem.objects.filter(is_visible=True).order_by("-created_at")[:6]
     recent_submissions = (
         Submission.objects.select_related("user", "problem")
@@ -84,6 +83,14 @@ def home(request):
         "submissions": Submission.objects.count(),
         "accepted": Submission.objects.filter(verdict="AC").count(),
     }
+    return render(request, "home.html", {
+        "running_contests": running,
+        "upcoming_contests": upcoming,
+        "recent_problems": recent_problems,
+        "recent_submissions": recent_submissions,
+        "stats": stats,
+        "solved_ids": _solved_problem_ids(request.user),
+    })
     return render(request, "home.html", {
         "running_contests": running,
         "upcoming_contests": upcoming,
