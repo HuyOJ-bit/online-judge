@@ -474,3 +474,48 @@ def group_join(request, slug):
         group.members.add(request.user)
         messages.success(request, f"Đã tham gia nhóm {group.name} thành công!")
     return redirect('group_detail', slug=group.slug)
+from django.contrib.auth.decorators import user_passes_test
+
+def is_admin(user):
+    return user.is_authenticated and user.is_staff
+
+@user_passes_test(is_admin)
+def group_edit(request, slug):
+    group = get_object_or_404(Group, slug=slug)
+    if request.method == "POST":
+        group.name = request.POST.get('name')
+        group.description = request.POST.get('description')
+        group.save()
+        messages.success(request, "Đã cập nhật nhóm thành công!")
+        return redirect('group_detail', slug=group.slug)
+    return render(request, "group_edit.html", {"group": group})
+
+@user_passes_test(is_admin)
+def group_delete(request, slug):
+    group = get_object_or_404(Group, slug=slug)
+    if request.method == "POST":
+        group.delete()
+        messages.success(request, "Đã xóa nhóm thành công!")
+        return redirect('group_list')
+    return render(request, "group_confirm_delete.html", {"group": group})
+
+@user_passes_test(is_admin)
+def group_add_contest(request, slug):
+    group = get_object_or_404(Group, slug=slug)
+    if request.method == "POST":
+        title = request.POST.get('title')
+        slug_contest = request.POST.get('slug')
+        start_time = request.POST.get('start_time')
+        end_time = request.POST.get('end_time')
+        
+        Contest.objects.create(
+            title=title,
+            slug=slug_contest,
+            start_time=start_time,
+            end_time=end_time,
+            group=group,
+            created_by=request.user
+        )
+        messages.success(request, "Đã thêm cuộc thi vào nhóm thành công!")
+        return redirect('group_detail', slug=group.slug)
+    return render(request, "group_add_contest.html", {"group": group})
