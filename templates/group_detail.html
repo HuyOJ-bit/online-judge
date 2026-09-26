@@ -3,13 +3,22 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>{{ group.name }}</h2>
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>{{ group.name }}</h2>
+        {% if user.is_staff %}
+            <div>
+                <a href="{% url 'group_edit' group.slug %}" class="btn btn-warning btn-sm">Chỉnh sửa nhóm</a>
+                <a href="{% url 'group_delete' group.slug %}" class="btn btn-danger btn-sm">Xóa nhóm</a>
+            </div>
+        {% endif %}
+    </div>
+    
     <p class="text-muted">Quản trị viên: <strong>{{ group.admin.username }}</strong></p>
     <p>{{ group.description }}</p>
 
     {% if user.is_authenticated %}
-        {% if user == group.admin %}
-            <span class="badge bg-success">Bạn là Admin nhóm này</span>
+        {% if user == group.admin or user.is_staff %}
+            <span class="badge bg-success">Bạn là Quản trị viên nhóm</span>
         {% elif is_member %}
             <span class="badge bg-info">Đã tham gia</span>
         {% else %}
@@ -19,7 +28,22 @@
 
     <hr class="my-4">
     
-    <h3>Cuộc thi trong nhóm</h3>
-    <p class="text-muted">Tính năng hiển thị cuộc thi riêng của nhóm sẽ cập nhật ở đây.</p>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Cuộc thi trong nhóm</h3>
+        {% if user.is_staff %}
+            <a href="{% url 'group_add_contest' group.slug %}" class="btn btn-primary btn-sm">+ Thêm cuộc thi mới</a>
+        {% endif %}
+    </div>
+
+    <div class="list-group">
+        {% for contest in group.contests.all %}
+            <a href="{% url 'contest_detail' contest.slug %}" class="list-group-item list-group-item-action">
+                <h5 class="mb-1">{{ contest.title }}</h5>
+                <small class="text-muted">Bắt đầu: {{ contest.start_time }}</small>
+            </a>
+        {% empty %}
+            <p class="text-muted">Chưa có cuộc thi nào trong nhóm này.</p>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}
