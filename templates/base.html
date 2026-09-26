@@ -22,6 +22,7 @@
 <div class="nav-links">
 <a class="{% if request.resolver_match.url_name == 'problem_list' %}active{% endif %}" href="{% url 'problem_list' %}">Bài tập</a>
 <a class="{% if 'contest' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'contest_list' %}">Cuộc thi</a>
+<a class="{% if 'group' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'group_list' %}">Nhóm</a>
 <a class="{% if request.resolver_match.url_name == 'leaderboard' %}active{% endif %}" href="{% url 'leaderboard' %}">Bảng xếp hạng</a>
 <a class="{% if 'submission' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'submission_list' %}">Bài nộp</a>
 <a class="{% if 'chat' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'chat_global' %}">Trò chuyện</a>
