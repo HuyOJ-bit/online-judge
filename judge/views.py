@@ -492,3 +492,19 @@ def group_add_contest(request, slug):
         return redirect('group_detail', slug=group.slug)
         
     return render(request, "group_add_contest.html", {"group": group, "problems": problems})
+@user_passes_test(is_admin)
+def group_create(request):
+    if request.method == "POST":
+        name = request.POST.get('name')
+        slug = request.POST.get('slug')
+        description = request.POST.get('description')
+        group = Group.objects.create(
+            name=name,
+            slug=slug,
+            description=description,
+            admin=request.user
+        )
+        group.members.add(request.user)
+        messages.success(request, "Đã tạo nhóm thành công!")
+        return redirect('group_detail', slug=group.slug)
+    return render(request, "group_create.html")
