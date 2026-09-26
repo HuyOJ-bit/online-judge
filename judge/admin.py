@@ -1,3 +1,4 @@
+from .models import Problem, TestCase, Submission, Contest, Participation, Group
 from django.contrib import admin, messages
 from django.utils.html import format_html
 
