@@ -441,3 +441,5 @@ def contest_standings(request, slug):
         "contest_problems": cps,
         "rows": rows,
     })
+def group_list(request):
+    return render(request, "group_list.html")
