@@ -443,3 +443,11 @@ def contest_standings(request, slug):
     })
 def group_list(request):
     return render(request, "group_list.html")
+def group_list(request):
+    return render(request, "group_list.html")
+
+def group_detail(request, slug):
+    return render(request, "group_detail.html")
+
+def group_create(request):
+    return render(request, "group_create.html")
