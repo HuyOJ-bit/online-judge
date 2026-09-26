@@ -267,3 +267,15 @@ class Contest(models.Model):
     
     def __str__(self):
         return self.title
+class Contest(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Tên cuộc thi")
+    slug = models.SlugField(unique=True, max_length=200)
+    description = models.TextField(blank=True, verbose_name="Mô tả")
+    start_time = models.DateTimeField(verbose_name="Thời gian bắt đầu")
+    end_time = models.DateTimeField(verbose_name="Thời gian kết thúc")
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="contests", verbose_name="Thuộc nhóm")
+    problems = models.ManyToManyField(Problem, blank=True, related_name="contests", verbose_name="Bài tập trong cuộc thi")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Người tạo")
+
+    def __str__(self):
+        return self.title
