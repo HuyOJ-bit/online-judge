@@ -241,3 +241,16 @@ class Submission(models.Model):
             "PD": "pd",
             "JG": "pd",
         }.get(self.verdict, "pd")
+from django.db import models
+from django.contrib.auth.models import User
+
+class Group(models.Model):
+    name = models.CharField(max_length=200, verbose_name="Tên nhóm")
+    slug = models.SlugField(unique=True, max_length=200)
+    description = models.TextField(blank=True, verbose_name="Mô tả")
+    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name="managed_groups", verbose_name="Quản trị viên")
+    members = models.ManyToManyField(User, related_name="joined_groups", blank=True, verbose_name="Thành viên")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
