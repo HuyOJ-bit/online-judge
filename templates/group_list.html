@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Danh sách Nhóm{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Danh sách Nhóm</h2>
+        {% if user.is_staff %}
+            <a href="{% url 'admin:judge_group_add' %}" class="btn btn-primary" target="_blank">+ Tạo nhóm mới (Admin)</a>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        {% for group in groups %}
+            <div class="col-md-4 mb-3">
+                <div class="card p-3 shadow-sm">
+                    <h4><a href="{% url 'group_detail' group.slug %}">{{ group.name }}</a></h4>
+                    <p class="text-muted small">Admin: {{ group.admin.username }}</p>
+                    <p>{{ group.description|truncatechars:100 }}</p>
+                    <a href="{% url 'group_detail' group.slug %}" class="btn btn-outline-primary btn-sm">Xem chi tiết</a>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-muted">Chưa có nhóm nào được tạo.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
