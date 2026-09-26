@@ -2,7 +2,7 @@ import time as _time
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
@@ -13,7 +13,7 @@ from django.views.decorators.http import require_POST
 
 from .forms import SubmissionForm
 from .judging import judge_submission, run_trial
-from .models import Contest, ContestProblem, Participation, Problem, Submission
+from .models import Contest, Group, Participation, Problem, Submission
 
 STARTER_CODE = {
     "c": '#include <stdio.h>\n\nint main(void) {\n    \n    return 0;\n}\n',
@@ -30,12 +30,9 @@ def _user_can_view_problem(user, problem):
         return True
     if user.is_authenticated and user.is_staff:
         return True
-    # Hidden problems become viewable through contests that have started.
     now = timezone.now()
-    cps = ContestProblem.objects.filter(problem=problem,
-                                        contest__start_time__lte=now)
-    for cp in cps.select_related("contest"):
-        contest = cp.contest
+    contests = problem.contests.filter(start_time__lte=now)
+    for contest in contests:
         if contest.status == "finished":
             return True
         if contest.user_registered(user):
@@ -53,19 +50,12 @@ def _solved_problem_ids(user):
 
 
 def _editorial_access(user, problem):
-    """Can this user read the editorial?
-
-    Returns (can_view, reason) with reason in {"", "live_contest", "not_solved"}.
-    Rules: staff always; hidden for everyone while a contest containing the
-    problem is running; otherwise unlocked by solving the problem.
-    """
     if user.is_authenticated and user.is_staff:
         return True, ""
     now = timezone.now()
-    in_live_contest = ContestProblem.objects.filter(
-        problem=problem,
-        contest__start_time__lte=now,
-        contest__end_time__gte=now,
+    in_live_contest = problem.contests.filter(
+        start_time__lte=now,
+        end_time__gte=now,
     ).exists()
     if in_live_contest:
         return False, "live_contest"
@@ -80,10 +70,8 @@ def _editorial_access(user, problem):
 # --------------------------------------------------------------------------- #
 def home(request):
     now = timezone.now()
-    running = Contest.objects.filter(is_visible=True, start_time__lte=now,
-                                     end_time__gte=now)
-    upcoming = Contest.objects.filter(is_visible=True,
-                                      start_time__gt=now).order_by("start_time")[:3]
+    running = Contest.objects.filter(is_visible=True, start_time__lte=now, end_time__gte=now)
+    upcoming = Contest.objects.filter(is_visible=True, start_time__gt=now).order_by("start_time")[:3]
     recent_problems = Problem.objects.filter(is_visible=True).order_by("-created_at")[:6]
     recent_submissions = (
         Submission.objects.select_related("user", "problem")
@@ -115,11 +103,9 @@ def problem_list(request):
     if difficulty in ("E", "M", "H"):
         qs = qs.filter(difficulty=difficulty)
     if query:
-        qs = qs.filter(Q(title__icontains=query) | Q(code__icontains=query) |
-                       Q(tags__icontains=query))
+        qs = qs.filter(Q(title__icontains=query) | Q(code__icontains=query) | Q(tags__icontains=query))
     qs = qs.annotate(
-        solver_count=Count("submissions__user",
-                           filter=Q(submissions__verdict="AC"), distinct=True)
+        solver_count=Count("submissions__user", filter=Q(submissions__verdict="AC"), distinct=True)
     )
     return render(request, "judge/problem_list.html", {
         "problems": qs,
@@ -137,10 +123,7 @@ def problem_detail(request, code):
     contest = None
     contest_slug = request.GET.get("contest")
     if contest_slug:
-        contest = Contest.objects.filter(slug=contest_slug).first()
-        if contest and not ContestProblem.objects.filter(
-                contest=contest, problem=problem).exists():
-            contest = None
+        contest = Contest.objects.filter(slug=contest_slug, problems=problem).first()
 
     samples = problem.testcases.filter(is_sample=True)
     form = SubmissionForm()
@@ -190,7 +173,6 @@ def submit(request, code):
             messages.error(request, "; ".join(err))
         return redirect(problem.get_absolute_url())
 
-    # Submission cooldown (protects free-tier CPU quota).
     cooldown = settings.SUBMISSION_COOLDOWN_SECONDS
     last = (Submission.objects.filter(user=request.user)
             .order_by("-submitted_at").first())
@@ -210,8 +192,7 @@ def submit(request, code):
         if contest:
             valid = (contest.is_running
                      and contest.user_registered(request.user)
-                     and ContestProblem.objects.filter(
-                         contest=contest, problem=problem).exists())
+                     and contest.problems.filter(pk=problem.pk).exists())
             if not valid:
                 contest = None
 
@@ -222,41 +203,32 @@ def submit(request, code):
         language=form.cleaned_data["language"],
         source_code=form.cleaned_data["source_code"],
     )
-    judge_submission(submission)  # synchronous — returns in a few seconds
+    judge_submission(submission)
     return redirect(submission.get_absolute_url())
 
 
 @login_required
 @require_POST
 def run_code(request, code):
-    """AJAX endpoint for the "Run" button — tests code against the sample
-    tests and/or a custom input WITHOUT creating a submission."""
     problem = get_object_or_404(Problem, code=code)
     if not _user_can_view_problem(request.user, problem):
         raise Http404("Problem not available.")
 
     language = request.POST.get("language", "")
     if language not in dict(Submission.LANGUAGE_CHOICES):
-        return JsonResponse({"ok": False, "error": "bad_language",
-                             "message": "Unknown language."}, status=400)
+        return JsonResponse({"ok": False, "error": "bad_language", "message": "Unknown language."}, status=400)
     source = request.POST.get("source_code", "")
     if not source.strip():
-        return JsonResponse({"ok": False, "error": "empty_source",
-                             "message": "Write some code first — the editor is empty."},
-                            status=400)
+        return JsonResponse({"ok": False, "error": "empty_source", "message": "Write some code first."}, status=400)
     if len(source.encode()) > settings.MAX_SOURCE_BYTES:
-        return JsonResponse({"ok": False, "error": "too_large",
-                             "message": "Source too large (max 64 KB)."}, status=400)
+        return JsonResponse({"ok": False, "error": "too_large", "message": "Source too large."}, status=400)
 
-    # Light cooldown between trial runs (session-based).
     cooldown = getattr(settings, "RUN_COOLDOWN_SECONDS", 10)
     now = _time.time()
     last = request.session.get("last_trial_run_ts", 0)
     if now - last < cooldown:
         wait = int(cooldown - (now - last)) + 1
-        return JsonResponse({"ok": False, "error": "cooldown",
-                             "message": f"Please wait {wait}s between test runs."},
-                            status=429)
+        return JsonResponse({"ok": False, "error": "cooldown", "message": f"Please wait {wait}s."}, status=429)
     request.session["last_trial_run_ts"] = now
 
     custom_input = None
@@ -269,7 +241,7 @@ def run_code(request, code):
 
 
 # --------------------------------------------------------------------------- #
-# Submissions
+# Submissions & Leaderboard
 # --------------------------------------------------------------------------- #
 def submission_list(request):
     qs = Submission.objects.select_related("user", "problem", "contest")
@@ -345,11 +317,10 @@ def contest_list(request):
 
 def contest_detail(request, slug):
     contest = get_object_or_404(Contest, slug=slug)
-    if not contest.is_visible and not (request.user.is_authenticated
-                                       and request.user.is_staff):
+    if not contest.is_visible and not (request.user.is_authenticated and request.user.is_staff):
         raise Http404
     registered = contest.user_registered(request.user)
-    cps = contest.contest_problems.select_related("problem")
+    problems = contest.problems.all()
     show_problems = contest.status != "upcoming" and (
         registered or contest.status == "finished"
         or (request.user.is_authenticated and request.user.is_staff)
@@ -366,7 +337,7 @@ def contest_detail(request, slug):
     return render(request, "judge/contest_detail.html", {
         "contest": contest,
         "registered": registered,
-        "contest_problems": cps,
+        "contest_problems": problems,
         "show_problems": show_problems,
         "solved_ids": solved_in_contest,
         "attempted_ids": attempted_in_contest,
@@ -392,7 +363,7 @@ def contest_register(request, slug):
 
 def contest_standings(request, slug):
     contest = get_object_or_404(Contest, slug=slug)
-    cps = list(contest.contest_problems.select_related("problem"))
+    problems = list(contest.problems.all())
     participants = contest.participations.select_related("user")
 
     subs = (contest.submissions
@@ -402,7 +373,6 @@ def contest_standings(request, slug):
             .order_by("submitted_at")
             .values("user_id", "problem_id", "verdict", "submitted_at"))
 
-    # per (user, problem): wrong tries before first AC + AC minute
     cell = {}
     for s in subs:
         key = (s["user_id"], s["problem_id"])
@@ -418,8 +388,8 @@ def contest_standings(request, slug):
     rows = []
     for part in participants:
         solved, penalty, cells = 0, 0, []
-        for cp in cps:
-            entry = cell.get((part.user_id, cp.problem_id))
+        for prob in problems:
+            entry = cell.get((part.user_id, prob.id))
             if entry and entry["ac_minute"] is not None:
                 solved += 1
                 penalty += entry["ac_minute"] + contest.penalty_minutes * entry["tries"]
@@ -438,32 +408,24 @@ def contest_standings(request, slug):
 
     return render(request, "judge/standings.html", {
         "contest": contest,
-        "contest_problems": cps,
+        "contest_problems": problems,
         "rows": rows,
     })
-def group_list(request):
-    return render(request, "group_list.html")
-def group_list(request):
-    return render(request, "group_list.html")
 
-def group_detail(request, slug):
-    return render(request, "group_detail.html")
 
-def group_create(request):
-    return render(request, "group_create.html")
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Group
-
+# --------------------------------------------------------------------------- #
+# Groups
+# --------------------------------------------------------------------------- #
 def group_list(request):
     groups = Group.objects.all().order_by('-created_at')
     return render(request, "group_list.html", {"groups": groups})
+
 
 def group_detail(request, slug):
     group = get_object_or_404(Group, slug=slug)
     is_member = request.user in group.members.all() if request.user.is_authenticated else False
     return render(request, "group_detail.html", {"group": group, "is_member": is_member})
+
 
 @login_required
 def group_join(request, slug):
@@ -474,10 +436,11 @@ def group_join(request, slug):
         group.members.add(request.user)
         messages.success(request, f"Đã tham gia nhóm {group.name} thành công!")
     return redirect('group_detail', slug=group.slug)
-from django.contrib.auth.decorators import user_passes_test
+
 
 def is_admin(user):
     return user.is_authenticated and user.is_staff
+
 
 @user_passes_test(is_admin)
 def group_edit(request, slug):
@@ -490,6 +453,7 @@ def group_edit(request, slug):
         return redirect('group_detail', slug=group.slug)
     return render(request, "group_edit.html", {"group": group})
 
+
 @user_passes_test(is_admin)
 def group_delete(request, slug):
     group = get_object_or_404(Group, slug=slug)
@@ -499,37 +463,18 @@ def group_delete(request, slug):
         return redirect('group_list')
     return render(request, "group_confirm_delete.html", {"group": group})
 
+
 @user_passes_test(is_admin)
 def group_add_contest(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    if request.method == "POST":
-        title = request.POST.get('title')
-        slug_contest = request.POST.get('slug')
-        start_time = request.POST.get('start_time')
-        end_time = request.POST.get('end_time')
-        
-        Contest.objects.create(
-            title=title,
-            slug=slug_contest,
-            start_time=start_time,
-            end_time=end_time,
-            group=group,
-            created_by=request.user
-        )
-        messages.success(request, "Đã thêm cuộc thi vào nhóm thành công!")
-        return redirect('group_detail', slug=group.slug)
-    return render(request, "group_add_contest.html", {"group": group})
-@user_passes_test(is_admin)
-def group_add_contest(request, slug):
-    group = get_object_or_404(Group, slug=slug)
-    problems = Problem.objects.all().order_by('title') # Lấy tất cả bài tập có sẵn
+    problems = Problem.objects.all().order_by('title')
     
     if request.method == "POST":
         title = request.POST.get('title')
         slug_contest = request.POST.get('slug')
         start_time = request.POST.get('start_time')
         end_time = request.POST.get('end_time')
-        selected_problems = request.POST.getlist('problems') # Lấy danh sách ID các bài tập được chọn
+        selected_problems = request.POST.getlist('problems')
         
         contest = Contest.objects.create(
             title=title,
@@ -540,7 +485,6 @@ def group_add_contest(request, slug):
             created_by=request.user
         )
         
-        # Thêm các bài tập đã chọn vào cuộc thi
         if selected_problems:
             contest.problems.set(selected_problems)
             
