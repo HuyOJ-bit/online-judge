@@ -1,15 +1,12 @@
-from .models import Problem, TestCase, Submission, Contest, Participation, Group
 from django.contrib import admin, messages
 from django.utils.html import format_html
-
 from .judging import judge_submission
-from .models import Contest, ContestProblem, Participation, Problem, Submission, TestCase
+from .models import Problem, TestCase, Submission, Contest, Participation, Group
 
 VERDICT_COLORS = {
     "AC": "#2f855a", "WA": "#c53030", "TLE": "#dd6b20", "MLE": "#dd6b20",
     "RE": "#b7791f", "CE": "#6b46c1", "IE": "#718096", "PD": "#718096", "JG": "#3182ce",
 }
-
 
 class TestCaseInline(admin.StackedInline):
     model = TestCase
@@ -33,9 +30,6 @@ class ProblemAdmin(admin.ModelAdmin):
         ("Editorial", {
             "classes": ("collapse",),
             "fields": ("editorial", "editorial_code", "editorial_language"),
-            "description": "Unlocks for users who solved the problem; hidden for "
-                           "everyone (except staff) while a contest containing "
-                           "this problem is running.",
         }),
     )
 
@@ -87,7 +81,7 @@ class SubmissionAdmin(admin.ModelAdmin):
     @admin.action(description="Re-judge selected submissions")
     def rejudge(self, request, queryset):
         count = 0
-        for sub in queryset[:25]:  # protect the worker from huge batches
+        for sub in queryset[:25]:
             judge_submission(sub)
             count += 1
         self.message_user(request, f"Re-judged {count} submission(s).",
@@ -97,26 +91,20 @@ class SubmissionAdmin(admin.ModelAdmin):
         return False
 
 
-class ContestProblemInline(admin.TabularInline):
-    model = ContestProblem
-    extra = 1
-    autocomplete_fields = ("problem",)
+@admin.register(Group)
+class GroupAdmin(admin.ModelAdmin):
+    list_display = ('name', 'admin', 'created_at')
+    prepopulated_fields = {'slug': ('name',)}
+    filter_horizontal = ('members',)
 
 
 @admin.register(Contest)
 class ContestAdmin(admin.ModelAdmin):
-    list_display = ("title", "slug", "start_time", "end_time", "state",
-                    "participant_count", "is_visible")
-    list_filter = ("is_visible",)
+    list_display = ("title", "start_time", "end_time", "group", "created_by")
+    list_filter = ("group", "start_time")
     search_fields = ("title", "slug")
     prepopulated_fields = {"slug": ("title",)}
-    inlines = [ContestProblemInline]
-
-    @admin.display(description="Status")
-    def state(self, obj):
-        colors = {"upcoming": "#3182ce", "running": "#2f855a", "finished": "#718096"}
-        return format_html('<b style="color:{};">{}</b>',
-                           colors[obj.status], obj.status.title())
+    filter_horizontal = ('problems',)
 
     @admin.display(description="Participants")
     def participant_count(self, obj):
@@ -128,14 +116,3 @@ class ParticipationAdmin(admin.ModelAdmin):
     list_display = ("user", "contest", "registered_at")
     list_filter = ("contest",)
     search_fields = ("user__username",)
-@admin.register(Group)
-class GroupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'admin', 'created_at')
-    prepopulated_fields = {'slug': ('name',)}
-    filter_horizontal = ('members',)
-@admin.register(Contest)
-class ContestAdmin(admin.ModelAdmin):
-    list_display = ('title', 'start_time', 'end_time', 'group', 'created_by')
-    list_filter = ('group', 'start_time')
-    prepopulated_fields = {'slug': ('title',)}
-    filter_horizontal = ('problems',)
