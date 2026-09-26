@@ -70,7 +70,8 @@ def _editorial_access(user, problem):
 # --------------------------------------------------------------------------- #
 def home(request):
     now = timezone.now()
-    running = Contest.objects.filter(is_visible=True, start_time__lte=now, end_time__gte=now)
+    running = Contest.objects.filter(start_time__lte=now, end_time__gte=now)
+    upcoming = Contest.objects.filter(start_time__gt=now).order_by("start_time")[:3]
     upcoming = Contest.objects.filter(is_visible=True, start_time__gt=now).order_by("start_time")[:3]
     recent_problems = Problem.objects.filter(is_visible=True).order_by("-created_at")[:6]
     recent_submissions = (
