@@ -16,4 +16,7 @@ urlpatterns = [
     path("contest/<slug:slug>/", views.contest_detail, name="contest_detail"),
     path("contest/<slug:slug>/register/", views.contest_register, name="contest_register"),
     path("contest/<slug:slug>/standings/", views.contest_standings, name="contest_standings"),
+    path("groups/", views.group_list, name="group_list"),
+    path("group/<slug:slug>/", views.group_detail, name="group_detail"),
+    path("group/create/", views.group_create, name="group_create"),
 ]
