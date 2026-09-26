@@ -254,3 +254,4 @@ class Group(models.Model):
 
     def __str__(self):
         return self.name
+group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="contests", verbose_name="Thuộc nhóm")
