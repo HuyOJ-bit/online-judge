@@ -255,3 +255,15 @@ class Group(models.Model):
     def __str__(self):
         return self.name
 group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="contests", verbose_name="Thuộc nhóm")
+class Contest(models.Model):
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(blank=True)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="contests")
+    problems = models.ManyToManyField(Problem, blank=True, related_name="contests", verbose_name="Bài tập trong cuộc thi")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.title
