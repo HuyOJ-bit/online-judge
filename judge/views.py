@@ -519,3 +519,32 @@ def group_add_contest(request, slug):
         messages.success(request, "Đã thêm cuộc thi vào nhóm thành công!")
         return redirect('group_detail', slug=group.slug)
     return render(request, "group_add_contest.html", {"group": group})
+@user_passes_test(is_admin)
+def group_add_contest(request, slug):
+    group = get_object_or_404(Group, slug=slug)
+    problems = Problem.objects.all().order_by('title') # Lấy tất cả bài tập có sẵn
+    
+    if request.method == "POST":
+        title = request.POST.get('title')
+        slug_contest = request.POST.get('slug')
+        start_time = request.POST.get('start_time')
+        end_time = request.POST.get('end_time')
+        selected_problems = request.POST.getlist('problems') # Lấy danh sách ID các bài tập được chọn
+        
+        contest = Contest.objects.create(
+            title=title,
+            slug=slug_contest,
+            start_time=start_time,
+            end_time=end_time,
+            group=group,
+            created_by=request.user
+        )
+        
+        # Thêm các bài tập đã chọn vào cuộc thi
+        if selected_problems:
+            contest.problems.set(selected_problems)
+            
+        messages.success(request, "Đã thêm cuộc thi và chọn bài tập vào nhóm thành công!")
+        return redirect('group_detail', slug=group.slug)
+        
+    return render(request, "group_add_contest.html", {"group": group, "problems": problems})
