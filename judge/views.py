@@ -491,6 +491,7 @@ def group_add_contest(request, slug):
             end_time=end_time,
             group=group,
             created_by=request.user
+            is_visible=True
         )
         
         if selected_problems:
