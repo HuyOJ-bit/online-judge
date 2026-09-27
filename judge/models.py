@@ -130,6 +130,7 @@ class Contest(models.Model):
     penalty_minutes = models.PositiveIntegerField(
         default=20, help_text="Penalty minutes added per wrong try before the AC."
     )
+    is_visible = models.BooleanField(default=True)  # Thêm dòng này vào
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
