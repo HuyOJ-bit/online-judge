@@ -489,10 +489,17 @@ def group_add_contest(request, slug):
             slug=slug_contest,
             start_time=start_time,
             end_time=end_time,
-            group=group,
-            created_by=request.user,
-            is_visible=True  # Thêm dòng này vào để tránh lỗi not-null constraint
+            group=group,             # Gắn vào nhóm chuẩn
+            created_by=request.user  # Gắn người tạo chuẩn
         )
+        
+        if selected_problems:
+            contest.problems.set(selected_problems)
+            
+        messages.success(request, "Đã thêm cuộc thi vào nhóm thành công!")
+        return redirect('group_detail', slug=group.slug)
+        
+    return render(request, "group_add_contest.html", {"group": group, "problems": problems})
         
         if selected_problems:
             contest.problems.set(selected_problems)
