@@ -500,14 +500,6 @@ def group_add_contest(request, slug):
         return redirect('group_detail', slug=group.slug)
         
     return render(request, "group_add_contest.html", {"group": group, "problems": problems})
-        
-        if selected_problems:
-            contest.problems.set(selected_problems)
-            
-        messages.success(request, "Đã thêm cuộc thi và chọn bài tập vào nhóm thành công!")
-        return redirect('group_detail', slug=group.slug)
-        
-    return render(request, "group_add_contest.html", {"group": group, "problems": problems})
 @user_passes_test(is_admin)
 def group_create(request):
     if request.method == "POST":
