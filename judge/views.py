@@ -490,7 +490,8 @@ def group_add_contest(request, slug):
             start_time=start_time,
             end_time=end_time,
             group=group,
-            created_by=request.user
+            created_by=request.user,
+            is_visible=True  # Thêm dòng này vào để tránh lỗi not-null constraint
         )
         
         if selected_problems:
