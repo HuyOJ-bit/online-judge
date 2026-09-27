@@ -125,11 +125,27 @@ class Contest(models.Model):
     start_time = models.DateTimeField(verbose_name="Thời gian bắt đầu")
     end_time = models.DateTimeField(verbose_name="Thời gian kết thúc")
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="contests", verbose_name="Thuộc nhóm")
-    problems = models.ManyToManyField(Problem, blank=True, related_name="contests", verbose_name="Bài tập trong cuộc thi")
+    problems = models.ManyToManyField(Problem, through='ContestProblem', blank=True, related_name="contests", verbose_name="Bài tập trong cuộc thi")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Người tạo")
+    is_visible = models.BooleanField(default=True)
     penalty_minutes = models.PositiveIntegerField(
         default=20, help_text="Penalty minutes added per wrong try before the AC."
     )
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        if is_new:
+            # Tự động gán tất cả bài tập đang có vào cuộc thi mới với nhãn A, B, C...
+            problems = Problem.objects.filter(is_visible=True)
+            labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K']
+            for idx, prob in enumerate(problems):
+                if idx < len(labels):
+                    ContestProblem.objects.get_or_create(
+                        contest=self,
+                        problem=prob,
+                        defaults={'label': labels[idx], 'points': 100}
+                    )
     is_visible = models.BooleanField(default=True)  # Thêm dòng này vào
     created_at = models.DateTimeField(auto_now_add=True)
 
