@@ -118,6 +118,16 @@ class TestCase(models.Model):
         return f"{self.problem.code} test #{self.order} ({kind})"
 
 
+class ContestProblem(models.Model):
+    contest = models.ForeignKey('Contest', on_delete=models.CASCADE, related_name='contest_problems')
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='problem_contests')
+    label = models.CharField(max_length=4, default='A')
+    points = models.IntegerField(default=100)
+
+    class Meta:
+        unique_together = ('contest', 'label')
+
+
 class Contest(models.Model):
     title = models.CharField(max_length=200, verbose_name="Tên cuộc thi")
     slug = models.SlugField(unique=True, max_length=200)
@@ -127,30 +137,29 @@ class Contest(models.Model):
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="contests", verbose_name="Thuộc nhóm")
     problems = models.ManyToManyField(Problem, through='ContestProblem', blank=True, related_name="contests", verbose_name="Bài tập trong cuộc thi")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Người tạo")
-    is_visible = models.BooleanField(default=True)
+    is_visible = models.BooleanField(default=True, verbose_name="Hiển thị")
     penalty_minutes = models.PositiveIntegerField(
         default=20, help_text="Penalty minutes added per wrong try before the AC."
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-start_time"]
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
         super().save(*args, **kwargs)
         if is_new:
             # Tự động gán tất cả bài tập đang có vào cuộc thi mới với nhãn A, B, C...
-            problems = Problem.objects.filter(is_visible=True)
+            all_problems = Problem.objects.filter(is_visible=True)
             labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K']
-            for idx, prob in enumerate(problems):
+            for idx, prob in enumerate(all_problems):
                 if idx < len(labels):
                     ContestProblem.objects.get_or_create(
                         contest=self,
                         problem=prob,
                         defaults={'label': labels[idx], 'points': 100}
                     )
-    is_visible = models.BooleanField(default=True)  # Thêm dòng này vào
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["-start_time"]
 
     def __str__(self):
         return self.title
