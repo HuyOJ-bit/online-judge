@@ -12,10 +12,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
+       migrations.AddField(
             model_name='contest',
             name='group',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='contests', to='judge.group', verbose_name='Thuộc nhóm'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='contests', to='judge.Group', verbose_name='Thuộc nhóm'),
         ),
         migrations.AddField(
             model_name='contest',
