@@ -5,21 +5,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 
-class Group(models.Model):
-    name = models.CharField(max_length=200, verbose_name="Tên nhóm")
-    slug = models.SlugField(unique=True, max_length=200)
-    description = models.TextField(blank=True, verbose_name="Mô tả")
-    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name="managed_groups", verbose_name="Quản trị viên")
-    members = models.ManyToManyField(User, related_name="joined_groups", blank=True, verbose_name="Thành viên")
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse("group_detail", args=[self.slug])
-
-
 class Problem(models.Model):
     DIFFICULTY_CHOICES = [("E", "Easy"), ("M", "Medium"), ("H", "Hard")]
 
@@ -50,8 +35,7 @@ class Problem(models.Model):
     )
     editorial = models.TextField(
         blank=True,
-        help_text="Solution explanation. Unlocks for users who solved the problem "
-                  "(hidden for everyone while a contest containing it is running).",
+        help_text="Solution explanation. Unlocks for users who solved the problem.",
     )
     editorial_code = models.TextField(
         "Reference solution", blank=True,
@@ -118,24 +102,13 @@ class TestCase(models.Model):
         return f"{self.problem.code} test #{self.order} ({kind})"
 
 
-class ContestProblem(models.Model):
-    contest = models.ForeignKey('Contest', on_delete=models.CASCADE, related_name='contest_problems')
-    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='problem_contests')
-    label = models.CharField(max_length=4, default='A')
-    points = models.IntegerField(default=100)
-
-    class Meta:
-        unique_together = ('contest', 'label')
-
-
 class Contest(models.Model):
     title = models.CharField(max_length=200, verbose_name="Tên cuộc thi")
     slug = models.SlugField(unique=True, max_length=200)
     description = models.TextField(blank=True, verbose_name="Mô tả")
     start_time = models.DateTimeField(verbose_name="Thời gian bắt đầu")
     end_time = models.DateTimeField(verbose_name="Thời gian kết thúc")
-    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="contests", verbose_name="Thuộc nhóm")
-    problems = models.ManyToManyField(Problem, through='ContestProblem', blank=True, related_name="contests", verbose_name="Bài tập trong cuộc thi")
+    problems = models.ManyToManyField(Problem, blank=True, related_name="contests", verbose_name="Bài tập trong cuộc thi")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Người tạo")
     is_visible = models.BooleanField(default=True, verbose_name="Hiển thị")
     penalty_minutes = models.PositiveIntegerField(
@@ -145,21 +118,6 @@ class Contest(models.Model):
 
     class Meta:
         ordering = ["-start_time"]
-
-    def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        super().save(*args, **kwargs)
-        if is_new:
-            # Tự động gán tất cả bài tập đang có vào cuộc thi mới với nhãn A, B, C...
-            all_problems = Problem.objects.filter(is_visible=True)
-            labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K']
-            for idx, prob in enumerate(all_problems):
-                if idx < len(labels):
-                    ContestProblem.objects.get_or_create(
-                        contest=self,
-                        problem=prob,
-                        defaults={'label': labels[idx], 'points': 100}
-                    )
 
     def __str__(self):
         return self.title
