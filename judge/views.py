@@ -489,8 +489,8 @@ def group_add_contest(request, slug):
             slug=slug_contest,
             start_time=start_time,
             end_time=end_time,
-            group=group,             # Gắn vào nhóm chuẩn
-            created_by=request.user  # Gắn người tạo chuẩn
+            group=group,
+            created_by=request.user
         )
         
         if selected_problems:
